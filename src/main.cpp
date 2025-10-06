@@ -19,7 +19,7 @@ int main(){
 
 
   mapa.DistribuirBiomas_Voronoi(Biomas, NUM_BIOMAS, 3);
-  mapa.generarCuerposDeAgua(0.4, 4, 8, 3, 6);
+  mapa.generarCuerposDeAgua(0.3, 4, 8, 2, 3);
   std::cout << mapa;
 
   return 0;

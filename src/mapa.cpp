@@ -272,7 +272,7 @@ std::ostream& operator<<(std::ostream& os, const Mapa& mapa) {
         for (int x = 0; x < mapa.cantidad_celdas_x; ++x) {
             const CeldaBase& celda = mapa.grid[y][x];
             if (celda.tiene_agua){
-                os << "~";
+                os <<" " << "~" <<" ";
             }else{
                 if(celda.bioma == nullptr){
                     os << " -1 ";
