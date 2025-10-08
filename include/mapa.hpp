@@ -1,8 +1,7 @@
-#ifndef MAPA_HPP
-#define MAPA_HPP
+#pragma once
 
 #include <random>
-#include <cstring>
+#include <string>
 #include <iostream>
 
 struct Cord{
@@ -26,10 +25,15 @@ struct ParametrosBasico {
     float reduccion;
 };
 
+struct Color {
+    unsigned char r, g, b;
+};
+
 class Bioma {
 private:
     int id;
     std::string nombre;
+    Color ColorBioma;
 
     // Inicializacion
     float temperatura_media;
@@ -57,7 +61,7 @@ private:
 public:
     
     // Constructor de Bioma
-    Bioma(int identificador, std::string nombre,
+    Bioma(int identificador, std::string nombre, Color ColorBioma,
         float temp_media, float hum_media   , float rad_media, 
         float mov_media , float expan_media , float reduc_media,
         float temp_std  , float hum_std     , float rad_std, 
@@ -68,6 +72,9 @@ public:
     EstadosBasico getEstadoBioma() const;
     ParametrosBasico getParametrosBioma() const;
     int getBiomaId() const;
+    std::string getBiomaNombre() const;
+    Color getBiomaColor() const;
+
 };
 
 struct Semilla {
@@ -92,9 +99,12 @@ private:
     int resolucion;
     CeldaBase** grid;   // Matriz 2D de celdas
 
-    void generarRios(int numRios, int anchoRioMax, std::mt19937 &gen);
-    void generarEstanques(int numEstanques, int radioEstanqueMax, std::mt19937 &gen);
-    void ajustarPorcentajeAgua(float porcentajeAgua, std::mt19937 &gen);
+    void pincel_agua(int x, int y, int r_x, int r_y, bool circular, bool valorAgua);
+    int pincel_agua_retorno(int x, int y, int r_x, int r_y, bool circular, bool valorAgua);
+
+    void generarRios(int numRios, int anchoRioMax, std::mt19937 &gen, const int &objetivoAgua, int &aguaActual);
+    void generarEstanques(int numEstanques, int radioEstanqueMax, std::mt19937 &gen, const int &objetivoAgua, int &aguaActual);
+    void generarSubRios(int anchoRioMax, std::mt19937 &gen, const int &objetivoAgua, int &aguaActual);
 
 public:
     // Constructor / Destructor
@@ -104,15 +114,15 @@ public:
     // Acceso y límites
     bool dentroMapa(int x, int y) const;
     CeldaBase& obtenerCelda(int x, int y) const;
+    CeldaBase& getCelda(int x, int y) const;
+    int getMapaCeldas_x() const;
+    int getMapaCeldas_y() const;
 
     // Generación procedural
     void DistribuirBiomas_Voronoi(const Bioma *Biomas, int num_biomas, int biomas_repetidos_max);
-    void generarCuerposDeAgua(float porcentaje_agua, int numRios, int numEstanques, int anchoRioMax, int radioEstanqueMax);
+    void generarCuerposDeAgua(float porcentaje_agua, int numRios, int numEstanques, int anchoRioMax, int radioEstanqueMax, int anchoSubRioMax);
 
     // Depuración / Visualización
-    void graficarMapa();
     friend std::ostream& operator<<(std::ostream& os, const Mapa& mapa);
 
 };
-
-#endif
