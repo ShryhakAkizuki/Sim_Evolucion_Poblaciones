@@ -150,10 +150,35 @@ public:
 
 // ------------------ Unordered Map ---------------------
 template<typename T>
-struct Pares {
-    T x, y;
+class Pares {
+public:
+    // Atributos (Inicializados por defecto)
+    T x{}, y{}; 
     
-    bool operator==(const Pares& other) const { return x == other.x && y == other.y; }
+    // Constructores
+    Pares() = default;                          // Constructor por defecto
+    Pares(T xVal, T yVal) : x(xVal), y(yVal) {} // Constructor de inicializacion
+    Pares(const Pares& other) = defalut;        // Constructor de copia
+    Pares(Pares&& other) noexcept =default;     // Constructor de movimiento
+
+    // Destructures
+    ~Pares() = default;                         // Destructor por defecto
+    
+    // Operadores
+    bool operator==(const Pares& other) const { // Operador de igualdad
+        return x == other.x && y == other.y; 
+    }
+
+    bool operator!=(const Pares& other) const { // Operador de desigualdad
+        return !(*this == other); 
+    }
+
+    T& operator[](size_t idx){
+        return idx == 0 ? x : y;
+    }
+
+    // ostream y operador <<
+
 };
 
 static int hash_pair(const Pares<int>& p, unsigned int N_BUCKETS) {
@@ -161,10 +186,14 @@ static int hash_pair(const Pares<int>& p, unsigned int N_BUCKETS) {
 }
 
 template<typename T>
-struct HashNode {
+class HashNode {
+public:
     Pares<int> key;
     T value;
     HashNode* next;
+
+    HashNode():
+
 };
 
 template<typename T, unsigned int N_BUCKETS = 4096>
