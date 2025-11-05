@@ -16,10 +16,12 @@ public:
     // ----- Constructores -----
     DynamicArray() = default;                       // Constructor por defecto
 
-    explicit DynamicArray(uint32_t capacity) :      // Constructor con capacidad inicial
-    _capacity(capacity), 
-    _size(0) {
+    explicit DynamicArray(uint32_t capacity) :      // Constructor con capacidad - inicializar a cero
+    _capacity(capacity), _size(capacity) {  
         _data = std::make_unique<T[]>(_capacity);
+        for(uint32_t i = 0; i < _capacity; ++i) {
+            _data[i] = T{};  
+        }
     }
 
     DynamicArray(std::initializer_list<T> init) :   // Constructor con lista de inicialización = {1, 2, ...}
@@ -120,11 +122,16 @@ public:
     }
 
     void shrink_to_fit(){                   // Delimita el tamaño del arreglo al tamaño justo
-        if(_size < _capacity){
-            resize(_size);
+        if(_size < _capacity && _size > 0){
+            auto new_data = std::make_unique<T[]>(_size);
+            for (uint32_t i = 0; i < _size; ++i){
+                new_data[i] = std::move(_data[i]);
+            }
+            _data = std::move(new_data);
+            _capacity = _size;
         }
     }
-
+    
     // Asignacion y retorno
     void clear() noexcept{                  // Limpia la lista
         _size = 0;
@@ -149,10 +156,10 @@ public:
             throw std::out_of_range("No hay elementos para retirar del arreglo");
         }
 
-        if(_size <= _capacity/4){
-            shrink_to_fit();
-        }
-        T result = std::move(_data[--_size]); 
+        T result = _data[_size - 1]; 
+        --_size;
+        
+        if(_size <= _capacity/4) shrink_to_fit();
         return result;
     }
 
@@ -161,7 +168,7 @@ public:
         return _data[0];
     }
     
-    const T& front() const {                // Copia primer valor
+    const T& front() const {                // Acceso constante al primer valor
         if (_size == 0) throw std::out_of_range("Array is empty");
         return _data[0];
     }
@@ -171,7 +178,7 @@ public:
         return _data[_size - 1];
     }
     
-    const T& back() const {                 // Copia ultimo valor
+    const T& back() const {                 // Acceso constante al último valor
         if (_size == 0) throw std::out_of_range("Array is empty");
         return _data[_size - 1];
     }
