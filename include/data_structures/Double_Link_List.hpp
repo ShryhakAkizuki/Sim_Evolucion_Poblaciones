@@ -112,13 +112,13 @@ public:
 
     // ----- Iteradores -----
 
-    iterator begin() { return iterator(_head.get()); }
+    iterator begin() { return iterator(_head); }
     iterator end() { return iterator(nullptr); }
     
-    const_iterator begin() const { return const_iterator(_head.get()); }
+    const_iterator begin() const { return const_iterator(_head); }
     const_iterator end() const { return const_iterator(nullptr); }
     
-    const_iterator cbegin() const { return const_iterator(_head.get()); }
+    const_iterator cbegin() const { return const_iterator(_head); }
     const_iterator cend() const { return const_iterator(nullptr); }
 
     // ----- Métodos -----
@@ -364,23 +364,66 @@ public:
         _size--;
     }
 
+    iterator erase(const_iterator pos) {
+        if (pos == end() || empty()) return end();
+        
+        // Obtenemos el shared_ptr directamente del iterador
+        auto node_to_delete = pos._current;
+        
+        // Caso especial: si es el único nodo
+        if (_size == 1) {
+            clear();
+            return end();
+        }
+        
+        // Encontrar el siguiente nodo antes de eliminar
+        std::shared_ptr<DNode_list<T>> next_node;
+        if (node_to_delete) {
+            next_node = node_to_delete->forward_ptr();
+        }
+        
+        // Usar Delete_Node existente que ya maneja todos los casos
+        Delete_Node(node_to_delete);
+        
+        // Devolver iterador al siguiente nodo
+        if (next_node) {
+            return iterator(next_node);
+        } else {
+            return end();
+        }
+    }
 
+    iterator erase(const_iterator first, const_iterator last) {
+        auto it = first;
+        while (it != last) {
+            it = erase(it);
+        }
+        return iterator(last._current);
+    }
 
 private:
     // ----- Iteradores -----
 
     class iterator{
     private:
-        DNode_list<T>* _current;
+        std::shared_ptr<DNode_list<T>> _current;
 
     public:
-        iterator(DNode_list<T>* node): _current(node){}
+        iterator(std::shared_ptr<DNode_list<T>> node): _current(node){}
 
-        T& operator*() {return _current->data(); }
+        T& operator*() { 
+            if (!_current) throw std::runtime_error("Dereferencing end iterator");
+            return _current->data(); 
+        }
         
+        T* operator->() { 
+            if (!_current) throw std::runtime_error("Accessing end iterator");
+            return &_current->data(); 
+        }
+
         iterator& operator++(){
             if(_current) {
-                _current = _current->forward_ptr().get();
+                _current = _current->forward_ptr();
             }            
             return *this;
         }
@@ -391,23 +434,65 @@ private:
             return temp;
         }
 
+        iterator& operator--(){
+            if(_current) {
+                _current = _current->backward_ptr();
+            } else {
+                // Si estamos en end(), retroceder al tail
+                if (auto tail_ptr = _tail.lock()) {
+                    _current = tail_ptr;
+                }
+            }
+            return *this;
+        }
+        
+        iterator operator--(int) {
+            iterator temp = *this;
+            --(*this);
+            return temp;
+        }
+
+        std::shared_ptr<DNode_list<T>> get_node() const { return _current; }
+        
+        bool operator==(const iterator& other) const {
+            return _current == other._current;
+        }
+
         bool operator!=(const iterator& other) const{
             return _current != other._current;
+        }
+        
+        // Para comparación con const_iterator
+        bool operator==(const const_iterator& other) const {
+            return _current == other.get_node();
+        }
+        
+        bool operator!=(const const_iterator& other) const {
+            return _current != other.get_node();
         }
     };
 
     class const_iterator {
     private:
-        const DNode_list<T>* _current;
+        std::shared_ptr<DNode_list<T>> _current;
     
     public:
-        const_iterator(const DNode_list<T>* node) : _current(node) {}
+        const_iterator(std::shared_ptr<DNode_list<T>> node) : _current(node) {}
+        const_iterator(const iterator& other) : _current(other.get_node()) {} // Conversión
+
+        const T& operator*() const { 
+            if (!_current) throw std::runtime_error("Dereferencing end iterator");
+            return _current->data(); 
+        }
         
-        const T& operator*() const { return _current->data(); }
+        const T* operator->() const { 
+            if (!_current) throw std::runtime_error("Accessing end iterator");
+            return &_current->data(); 
+        }        
         
         const_iterator& operator++() { 
             if(_current) {
-                _current = _current->forward_ptr().get();
+                _current = _current->forward_ptr();
             }            
             return *this;
         }
@@ -418,8 +503,41 @@ private:
             return temp;
         }
         
+        const_iterator& operator--(){
+            if(_current) {
+                _current = _current->backward_ptr();
+            } else {
+                // Si estamos en end(), retroceder al tail
+                if (auto tail_ptr = _tail.lock()) {
+                    _current = tail_ptr;
+                }
+            }
+            return *this;
+        }
+        
+        const_iterator operator--(int) {
+            const_iterator temp = *this;
+            --(*this);
+            return temp;
+        }
+        
+        std::shared_ptr<DNode_list<T>> get_node() const { return _current; }
+        
+        bool operator==(const const_iterator& other) const {
+            return _current == other._current;
+        }
+
         bool operator!=(const const_iterator& other) const {
             return _current != other._current;
+        }
+        
+        // Para comparación con iterator
+        bool operator==(const iterator& other) const {
+            return _current == other.get_node();
+        }
+        
+        bool operator!=(const iterator& other) const {
+            return _current != other.get_node();
         }
     };
 };

@@ -23,7 +23,7 @@ public:
     explicit DNode_list(const T& data,                                      // Constructor con dato y nodos enlazados
                               std::shared_ptr<DNode_list> forward = nullptr, 
                               std::shared_ptr<DNode_list> backward = nullptr):
-    _data(data), _forward(std::move(forward)), _backward(backward){}
+    _data(data), _forward(std::move(forward)), _backward(std::weak_ptr<DNode_list>(backward)){}
 
     DNode_list(DNode_list&& other) noexcept = default;                      // Constructor de movimiento
 

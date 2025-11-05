@@ -21,7 +21,7 @@ private:
 
 public:
     // ----- Constructores -----
-    Unordered_map(){
+    Unordered_map() : _bucket_count(16){
         _buckets.resize(_bucket_count);
     }
 
@@ -119,6 +119,44 @@ public:
 
     // ----- Iteradores -----
 
+    iterator begin() {
+        for(size_t i = 0; i<_bucket_count; ++i){
+            if (!_buckets[i].empty()){
+                return iterator(this, i, _buckets[i].begin());
+            }
+        }
+        return end();
+    }
+
+    iterator end(){
+        return iterator(this, _bucket_count, {});
+    }
+
+    const_iterator begin() const {
+        for(size_t i = 0; i<_bucket_count; ++i){
+            if (!_buckets[i].empty()){
+                return const_iterator(this, i, _buckets[i].begin());
+            }
+        }
+        return end();
+    }
+
+    const_iterator end() const{
+        return const_iterator(this, _bucket_count, {});
+    }
+    
+    const_iterator cbegin() const {
+        for(size_t i = 0; i<_bucket_count; ++i){
+            if (!_buckets[i].empty()){
+                return const_iterator(this, i, _buckets[i].begin());
+            }
+        }
+        return cend();
+    }
+
+    const_iterator cend() const{
+        return const_iterator(this, _bucket_count, {});
+    }
 
     // ----- Métodos -----
 
@@ -130,6 +168,10 @@ public:
     size_t size() const {  
         return _size; 
     }
+
+    size_t bucket_count() const { return _bucket_count; }
+    
+    double max_load_factor() const { return _max_load_factor; }
 
     // Asignacion y retorno
     void clear() {
@@ -189,11 +231,9 @@ public:
         size_t bucket_index = hash_function(key);
         auto& bucket_list = _buckets[bucket_index];
         
-        // Buscar el elemento y su índice
-        uint32_t index = 0;
-        for (auto it = bucket_list.begin(); it != bucket_list.end(); ++it, ++index) {
+        for (auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
             if (it->first() == key) {
-                bucket_list.Delete_Node(index);
+                bucket_list.erase(it);
                 _size--;
                 break;
             }
@@ -207,6 +247,11 @@ public:
 
     bool contains(const Key& key) const {
         return find(key) != nullptr;
+    }
+
+    void reserve(size_t count) {
+        size_t new_size = std::max(count, static_cast<size_t>(_size / _max_load_factor));
+        rehash(new_size);
     }
 
     // ----- Destructor -----
@@ -224,12 +269,12 @@ private:
 
     void rehash(size_t new_bucket_count){
         DynamicArray<Double_Linked_List<Pair<Key, Value>>> new_buckets(new_bucket_count);
-
+        
         for (auto& bucket : _buckets) {
-            for (auto it = bucket.begin(); it != bucket.end(); ) {
-                auto current = it++;
-                size_t new_index = _hasher(current->first()) % new_bucket_count;
-                new_buckets[new_index].push_back(std::move(*current));
+            while (!bucket.empty()) {
+                auto node = bucket.pop_front(); // Si tu lista lo soporta
+                size_t new_index = _hasher(node.first()) % new_bucket_count;
+                new_buckets[new_index].push_back(std::move(node));
             }
         }
 
@@ -242,17 +287,143 @@ private:
 
     class iterator{
     private:
+        
+        Unordered_map* _map = nullptr;
+        size_t _bucket_index = 0;
+        typename Double_Linked_List<Pair<Key, Value>>::iterator _list_iterator; 
 
     public:
 
-    }
+        iterator(Unordered_map* map = nullptr,
+                 size_t bucket_index = 0,
+                typename Double_Linked_List<Pair<Key,Value>>::iterator list_iterator = {})
+        : _map(map), _bucket_index(bucket_index), _list_iterator(list_iterator){
 
-    
-    class const_iterator{
+            if(_map && _bucket_index < _map->_bucket_count
+               && _list_iterator == _map->_buckets[_bucket_index].end()){
+                find_next_non_empty();
+            }
+        }
+
+        Pair<Key, Value>& operator*(){
+            return *_list_iterator;
+        }
+
+        Pair<Key, Value>* operator->(){
+            return &(*_list_iterator);
+        }
+
+        iterator& operator++(){
+            if(_map && _bucket_index < _map->_bucket_count){
+                ++_list_iterator;
+                find_next_non_empty();
+            }
+            return *this;
+        }
+
+        iterator operator++(int){
+            iterator temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        bool operator==(const iterator& other) const {
+            return _map == other._map &&
+                   _bucket_index == other._bucket_index &&
+                   _list_iterator == other._list_iterator;
+        }
+
+        bool operator!=(const iterator& other) const {
+            return !(*this == other);
+        }
+
+        friend class Unordered_map;
+
+
     private:
 
+        void find_next_non_empty(){
+            while(_bucket_index < _map ->_bucket_count
+                && _list_iterator == _map->_buckets[_bucket_index].end()){
+
+                _bucket_index++;
+                if(_bucket_index < _map->_bucket_count){
+                    _list_iterator = _map->_buckets[_bucket_index].begin();
+                }
+            }
+
+        }
+
+
+    };
+
+    class const_iterator{
+    private:
+        
+        const Unordered_map* _map = nullptr;
+        size_t _bucket_index = 0;
+        typename Double_Linked_List<Pair<Key, Value>>::const_iterator _list_iterator; 
+
     public:
 
-    }
+        const_iterator(const Unordered_map* map = nullptr,
+                       size_t bucket_index = 0,
+                       typename Double_Linked_List<Pair<Key,Value>>::const_iterator list_iterator = {})
+        : _map(map), _bucket_index(bucket_index), _list_iterator(list_iterator){
+
+            if(_map && _bucket_index < _map->_bucket_count
+               && _list_iterator == _map->_buckets[_bucket_index].end()){
+                find_next_non_empty();
+            }
+        }
+
+        const Pair<Key, Value>& operator*() const{
+            return *_list_iterator;
+        }
+
+        const Pair<Key, Value>* operator->() const{
+            return &(*_list_iterator);
+        }
+
+        const_iterator& operator++(){
+            if(_map && _bucket_index < _map->_bucket_count){
+                ++_list_iterator;
+                find_next_non_empty();
+            }
+            return *this;
+        }
+
+        const_iterator operator++(int){
+            const_iterator temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        bool operator==(const const_iterator& other) const {
+            return _map == other._map &&
+                   _bucket_index == other._bucket_index &&
+                   _list_iterator == other._list_iterator;
+        }
+
+        bool operator!=(const const_iterator& other) const {
+            return !(*this == other);
+        }
+
+        friend class Unordered_map;
+
+    private:
+        
+        void find_next_non_empty(){
+            while(_bucket_index < _map ->_bucket_count
+                && _list_iterator == _map->_buckets[_bucket_index].end()){
+
+                _bucket_index++;
+                if(_bucket_index < _map->_bucket_count){
+                    _list_iterator = _map->_buckets[_bucket_index].begin();
+                }
+            }
+
+        }
+    };
 
 };
