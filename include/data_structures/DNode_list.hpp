@@ -9,7 +9,7 @@ class DNode_list {
 protected:
     // ----- Atributos -----
     std::shared_ptr<DNode_list> _forward = nullptr;
-    std::weak_ptr<DNode_list> _backward = nullptr;
+    std::weak_ptr<DNode_list> _backward;
 
     T _data = {};
 
@@ -20,9 +20,12 @@ public:
     explicit DNode_list(const T& data):                                     // Constructor con dato 
     _data(data) {}
 
-    explicit DNode_list(const T& data,                                      // Constructor con dato y nodos enlazados
-                              std::shared_ptr<DNode_list> forward = nullptr, 
-                              std::shared_ptr<DNode_list> backward = nullptr):
+    explicit DNode_list(T&& data):                                     // Constructor con dato 
+    _data(std::move(data)) {}
+
+    DNode_list(const T& data,                                      // Constructor con dato y nodos enlazados
+               std::shared_ptr<DNode_list> forward, 
+               std::shared_ptr<DNode_list> backward):
     _data(data), _forward(std::move(forward)), _backward(std::weak_ptr<DNode_list>(backward)){}
 
     DNode_list(DNode_list&& other) noexcept = default;                      // Constructor de movimiento
@@ -51,7 +54,7 @@ public:
         _forward = std::move(forward); 
     }
     void set_backward(std::shared_ptr<DNode_list> backward) { 
-        _backward = backward; 
+         _backward = std::weak_ptr<DNode_list>(backward); 
     }
 
 };

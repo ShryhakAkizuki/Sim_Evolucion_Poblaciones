@@ -11,7 +11,7 @@ private:
     // ----- Atributos -----
     uint32_t _size = 0;
     std::shared_ptr<DNode_list<T>> _head = nullptr;
-    std::weak_ptr<DNode_list<T>> _tail = nullptr;
+    std::weak_ptr<DNode_list<T>> _tail;
 
 public:
     // ----- Constructores -----
@@ -19,6 +19,12 @@ public:
 
     explicit Double_Linked_List(const T& data){                             // Constructor para inicializar un dato
         _head = std::make_shared<DNode_list<T>>(data);
+        _tail = _head;
+        _size = 1;
+    }
+    
+    explicit Double_Linked_List(T&& data){                                  // Constructor para inicializar un dato
+        _head = std::make_shared<DNode_list<T>>(std::move(data));
         _tail = _head;
         _size = 1;
     }
@@ -46,7 +52,7 @@ public:
         }
     }
 
-    Double_Linked_List(Double_Linked_List&& other) noexcept :
+    Double_Linked_List(Double_Linked_List&& other) noexcept :               // Constructor de movimiento
     _size(other._size),
     _head(std::move(other._head)),
     _tail(std::move(other._tail)) { 
@@ -111,7 +117,9 @@ public:
     }
 
     // ----- Iteradores -----
-
+    class iterator;
+    class const_iterator;
+    
     iterator begin() { return iterator(_head); }
     iterator end() { return iterator(nullptr); }
     
@@ -135,7 +143,7 @@ public:
     // Asignacion y retorno
     void clear() noexcept{                                                  // Limpia la lista
         _head = nullptr;
-        _tail = nullptr;
+        _tail.reset();
         _size = 0;
     }
 
@@ -182,7 +190,7 @@ public:
 
         if (_size == 1){
             _head = nullptr;
-            _tail = nullptr;
+            _tail.reset();
         }else{
             auto new_tail = last_node->backward_ptr();
             new_tail->set_forward(nullptr);
@@ -193,7 +201,7 @@ public:
         return value;
     }
 
-    void push_front(const T& value){                                              // Ingresa el valor al inicio de la lista
+    void push_front(const T& value){                                        // Ingresa el valor al inicio de la lista
         
         auto new_node = std::make_shared<DNode_list<T>>(value);  
 
@@ -234,7 +242,7 @@ public:
 
         if (_size == 1){
             _head = nullptr;
-            _tail = nullptr;
+            _tail.reset();
         }else{
             auto new_head = _head->forward_ptr();
             new_head->set_backward(nullptr);
@@ -368,7 +376,7 @@ public:
         if (pos == end() || empty()) return end();
         
         // Obtenemos el shared_ptr directamente del iterador
-        auto node_to_delete = pos._current;
+        auto node_to_delete = pos.get_node();;
         
         // Caso especial: si es el único nodo
         if (_size == 1) {
@@ -400,9 +408,8 @@ public:
         }
         return iterator(last._current);
     }
-
-private:
-    // ----- Iteradores -----
+    
+    // ----- Iteradores - Clase -----
 
     class iterator{
     private:
@@ -431,24 +438,6 @@ private:
         iterator operator++(int) {
             iterator temp = *this;
             ++(*this);
-            return temp;
-        }
-
-        iterator& operator--(){
-            if(_current) {
-                _current = _current->backward_ptr();
-            } else {
-                // Si estamos en end(), retroceder al tail
-                if (auto tail_ptr = _tail.lock()) {
-                    _current = tail_ptr;
-                }
-            }
-            return *this;
-        }
-        
-        iterator operator--(int) {
-            iterator temp = *this;
-            --(*this);
             return temp;
         }
 
@@ -503,24 +492,6 @@ private:
             return temp;
         }
         
-        const_iterator& operator--(){
-            if(_current) {
-                _current = _current->backward_ptr();
-            } else {
-                // Si estamos en end(), retroceder al tail
-                if (auto tail_ptr = _tail.lock()) {
-                    _current = tail_ptr;
-                }
-            }
-            return *this;
-        }
-        
-        const_iterator operator--(int) {
-            const_iterator temp = *this;
-            --(*this);
-            return temp;
-        }
-        
         std::shared_ptr<DNode_list<T>> get_node() const { return _current; }
         
         bool operator==(const const_iterator& other) const {
@@ -540,4 +511,5 @@ private:
             return _current != other.get_node();
         }
     };
+
 };

@@ -3,44 +3,46 @@
 #include <cstdint>
 #include <initializer_list>
 #include <stdexcept>
+#include <functional>                           // Para std::hash
+#include <algorithm>
+
 #include "data_structures/Double_Link_List.hpp"
 #include "data_structures/DynamicArray.hpp"
 #include "data_structures/Pair.hpp"
-#include <functional>                           // Para std::hash
+
+#include <iostream>
 
 template<typename Key, typename Value>
 class Unordered_map{
 private:
     // ----- Atributos -----
-    DynamicArray<Double_Linked_List<Pair<Key, Value>>> _buckets;
     size_t _size = 0;
     size_t _bucket_count = 16;
     double _max_load_factor = 0.75;
 
     std::hash<Key> _hasher;
 
+    DynamicArray<Double_Linked_List<Pair<Key, Value>>> _buckets;
+
 public:
     // ----- Constructores -----
-    Unordered_map() : _bucket_count(16){
-        _buckets.resize(_bucket_count);
-    }
+    Unordered_map() : _bucket_count(16), 
+    _buckets(DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count)) {}
 
     explicit Unordered_map(size_t bucket_count) :
-    _bucket_count(bucket_count){
-        _buckets.resize(_bucket_count);
-    }
-
+    _bucket_count(bucket_count),
+    _buckets(DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count)) {}
+    
     Unordered_map(size_t bucket_count, size_t max_load_factor) :
-    _bucket_count(bucket_count), _max_load_factor(max_load_factor){
-        _buckets.resize(_bucket_count);
-    }
+    _bucket_count(bucket_count), _max_load_factor(max_load_factor)
+    ,_buckets(DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count)) {}
 
     Unordered_map(const Unordered_map& other) 
     : _size(other._size),
     _bucket_count(other._bucket_count),
     _max_load_factor(other._max_load_factor) {
         
-        _buckets.resize(_bucket_count);
+        _buckets = DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count);
         for (size_t i = 0; i < _bucket_count; ++i) {
             _buckets[i] = other._buckets[i];  
         }
@@ -54,8 +56,11 @@ public:
         
         other._size = 0;
         other._bucket_count = 16;  
-        other._buckets.resize(other._bucket_count); 
     }
+    
+    // ----- Destructor -----
+    
+    ~Unordered_map() = default;
 
     // ----- Operadores -----
 
@@ -65,7 +70,7 @@ public:
             _bucket_count = other._bucket_count;
             _max_load_factor = other._max_load_factor;
 
-            _buckets.resize(_bucket_count);
+            _buckets = DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count);
             for(size_t i = 0; i < _bucket_count; ++i){
                 _buckets[i] = other._buckets[i];
             }
@@ -82,7 +87,7 @@ public:
             
             other._size = 0;
             other._bucket_count = 16;  
-            other._buckets.resize(other._bucket_count); 
+            _buckets = DynamicArray<Double_Linked_List<Pair<Key, Value>>>(other._bucket_count);        
         }
         return *this;
     }
@@ -116,8 +121,10 @@ public:
         }
         throw std::out_of_range("Key not found");
     }
-
+   
     // ----- Iteradores -----
+    class iterator;
+    class const_iterator;
 
     iterator begin() {
         for(size_t i = 0; i<_bucket_count; ++i){
@@ -129,7 +136,7 @@ public:
     }
 
     iterator end(){
-        return iterator(this, _bucket_count, {});
+        return iterator(this, _bucket_count, _buckets[0].end());
     }
 
     const_iterator begin() const {
@@ -142,7 +149,7 @@ public:
     }
 
     const_iterator end() const{
-        return const_iterator(this, _bucket_count, {});
+        return const_iterator(this, _bucket_count, _buckets[0].end());
     }
     
     const_iterator cbegin() const {
@@ -155,7 +162,7 @@ public:
     }
 
     const_iterator cend() const{
-        return const_iterator(this, _bucket_count, {});
+        return const_iterator(this, _bucket_count, _buckets[0].end());
     }
 
     // ----- Métodos -----
@@ -203,25 +210,49 @@ public:
         insert(pair.first(), pair.second());
     }
 
-    Value* find(const Key& key){
+    Value& find(const Key& key) {
         size_t bucket_index = hash_function(key);
         auto& bucket_list = _buckets[bucket_index];
 
-        for(auto it = bucket_list.begin(); it != bucket_list.end(); ++it){
-            if(it->first() == key){
+        for(auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if(it->first() == key) {
+                return it->second();  // Retorna referencia directa
+            }
+        }
+        throw std::out_of_range("Key not found in Unordered_map");
+    }
+
+    const Value& find(const Key& key) const {
+        size_t bucket_index = hash_function(key);
+        const auto& bucket_list = _buckets[bucket_index];
+
+        for(auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if(it->first() == key) {
+                return it->second();  // Retorna const referencia
+            }
+        }
+        throw std::out_of_range("Key not found in Unordered_map");
+    }
+        
+    Value* find_ptr(const Key& key) {
+        size_t bucket_index = hash_function(key);
+        auto& bucket_list = _buckets[bucket_index];
+
+        for(auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if(it->first() == key) {
                 return &(it->second());
             }
         }
         return nullptr;
     }
 
-    const Value* find(const Key& key) const {
+    const Value* find_ptr(const Key& key) const{
         size_t bucket_index = hash_function(key);
-        const auto& bucket_list = _buckets[bucket_index];  // const&
+        const auto& bucket_list = _buckets[bucket_index];
 
-        for(auto it = bucket_list.begin(); it != bucket_list.end(); ++it){
-            if(it->first() == key){
-                return &(it->second());  // Retorna const Value*
+        for(auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if(it->first() == key) {
+                return &(it->second());
             }
         }
         return nullptr;
@@ -240,50 +271,45 @@ public:
         }
         
         if (_bucket_count > 16 && load_factor() < _max_load_factor / 4) {
-            size_t new_size = std::max(size_t(16), _size * 2);  // No reducir demasiado
+            size_t new_size = (std::max)(size_t(16), _size * 2);  // No reducir demasiado
             rehash(new_size);
         }
     }
 
     bool contains(const Key& key) const {
-        return find(key) != nullptr;
+        return find_otr(key) != nullptr;
     }
 
     void reserve(size_t count) {
-        size_t new_size = std::max(count, static_cast<size_t>(_size / _max_load_factor));
+        size_t new_size = (std::max)(count, static_cast<size_t>(_size / _max_load_factor));
         rehash(new_size);
     }
 
-    // ----- Destructor -----
-    ~Unordered_map() = default;
-
-private:
-    // ----- Calculo de hashes -----
-    size_t hash_function(const Key& key) const{
-        return _hasher(key) % _bucket_count;
-    }
-
-    double load_factor() const { 
-        return static_cast<double>(_size) / _bucket_count; 
-    }
-
-    void rehash(size_t new_bucket_count){
-        DynamicArray<Double_Linked_List<Pair<Key, Value>>> new_buckets(new_bucket_count);
+    iterator erase(iterator pos) {
+        if (pos == end()) return end();
         
-        for (auto& bucket : _buckets) {
-            while (!bucket.empty()) {
-                auto node = bucket.pop_front(); // Si tu lista lo soporta
-                size_t new_index = _hasher(node.first()) % new_bucket_count;
-                new_buckets[new_index].push_back(std::move(node));
-            }
-        }
-
-        _buckets = std::move(new_buckets);
-        _bucket_count = new_bucket_count;
-
+        Key key_to_erase = pos->first();
+        iterator next = pos;
+        ++next;
+        
+        erase(key_to_erase);
+        
+        return next;
     }
-    
-    // ----- Iteradores -----
+
+    const_iterator erase(const_iterator pos) {
+        if (pos == end()) return end();
+
+        Key key_to_erase = pos->first();
+        const_iterator next = pos;
+        ++next;
+        
+        erase(key_to_erase);
+        
+        return next;
+    }
+
+    // ----- Iteradores - Clases -----
 
     class iterator{
     private:
@@ -336,9 +362,6 @@ private:
         bool operator!=(const iterator& other) const {
             return !(*this == other);
         }
-
-        friend class Unordered_map;
-
 
     private:
 
@@ -409,8 +432,6 @@ private:
             return !(*this == other);
         }
 
-        friend class Unordered_map;
-
     private:
         
         void find_next_non_empty(){
@@ -426,4 +447,31 @@ private:
         }
     };
 
+
+private:
+    // ----- Calculo de hashes -----
+    size_t hash_function(const Key& key) const{
+        return _hasher(key) % _bucket_count;
+    }
+
+    double load_factor() const { 
+        return static_cast<double>(_size) / _bucket_count; 
+    }
+
+    void rehash(size_t new_bucket_count){
+        DynamicArray<Double_Linked_List<Pair<Key, Value>>> new_buckets(new_bucket_count);
+        
+        for (auto& bucket : _buckets) {
+            while (!bucket.empty()) {
+                auto node = bucket.pop_front(); // Si tu lista lo soporta
+                size_t new_index = _hasher(node.first()) % new_bucket_count;
+                new_buckets[new_index].push_back(std::move(node));
+            }
+        }
+
+        _buckets = std::move(new_buckets);
+        _bucket_count = new_bucket_count;
+
+    }
+    
 };
