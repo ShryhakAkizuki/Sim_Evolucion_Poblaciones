@@ -7,7 +7,7 @@
 // ----- Constructores -----
 
 // Constructor principal
-BiomeSystem::BiomeSystem(uint32_t worldSeed) 
+BiomeSystem::BiomeSystem(uint64_t worldSeed) 
 : _worldSeed(worldSeed) {}
 
 // Constructor de copia

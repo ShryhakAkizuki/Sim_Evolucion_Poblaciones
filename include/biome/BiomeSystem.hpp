@@ -11,12 +11,12 @@
 class BiomeSystem {
 private:
     DynamicArray<std::shared_ptr<Bioma>> _biomas;  
-    uint32_t _worldSeed = 0;
+    uint64_t _worldSeed = 0;
 
 public:
     // ----- Constructores -----
     BiomeSystem() = default;
-    explicit BiomeSystem(uint32_t worldSeed);
+    explicit BiomeSystem(uint64_t worldSeed);
     BiomeSystem(const BiomeSystem& other);
     BiomeSystem(BiomeSystem&& other) noexcept;
 

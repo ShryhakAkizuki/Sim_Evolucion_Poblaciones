@@ -52,6 +52,20 @@ public:
         Initializate_All_Chunks();
     }
 
+    explicit ChunkManager(uint32_t chunk_size, 
+                          std::shared_ptr<WorldGenerator> worldGenerator,
+                          uint32_t simulation_distance = 8, 
+                          uint32_t keep_loaded_distance = 12, 
+                          uint32_t Initial_Global_size = 1000) : 
+    _chunk_size(chunk_size), _simulation_distance(simulation_distance), _keep_loaded_distance(keep_loaded_distance), _Initial_Global_size(Initial_Global_size), _worldGenerator(std::move(worldGenerator)) {
+        
+        if (!_worldGenerator) {
+            _worldGenerator = std::make_shared<WorldGenerator>(12345);
+        }
+        Initializate_All_Chunks();
+    }
+
+
     ChunkManager(const ChunkManager& other) :          
     _chunk_size(other._chunk_size), _simulation_distance(other._simulation_distance), _keep_loaded_distance(other._keep_loaded_distance), _Initial_Global_size(other._Initial_Global_size),
     _chunks(other._chunks), _worldGenerator(other._worldGenerator) {}
@@ -297,15 +311,6 @@ private:
             }
         }
         std::cout << "Se crearon: " << counter << " Chunks\n";
-
-        // Segunda pasada: enlazar todos los chunks
-        for(int i = low_lim; i <= high_lim; i++) {
-            for(int j = low_lim; j <= high_lim; j++) {
-                ChunkCoord ChunkPos(i, j);
-                LinkChunkNeighbors(_chunks[ChunkPos]);
-            }
-        }
-        std::cout << "Se crearon y enlazaron: " << counter << " Chunks\n";
     }
 
     std::shared_ptr<Chunk> LoadChunkFromDisk(int ChunkX, int ChunkY) {

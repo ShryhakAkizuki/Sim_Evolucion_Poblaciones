@@ -65,7 +65,7 @@ public:
           float movMedia = 1.0f, float expanMedia = 0.0f, float reducMedia = 0.0f,
           float tempStd = 5.0f, float humStd = 10.0f, float radStd = 15.0f,
           float movStd = 0.2f, float expanStd = 0.05f, float reducStd = 0.05f,
-          uint32_t seed = 0);
+          uint64_t seed = 0);
 
     Bioma(int id, std::string nombre) : Bioma(id, std::move(nombre), {0, 0, 0}) {}
     Bioma(const Bioma& other);
@@ -91,5 +91,5 @@ public:
 
 private:
     // ----- Métodos -----
-    void inicializarRNG(uint32_t seed);
+    void inicializarRNG(uint64_t seed);
 };

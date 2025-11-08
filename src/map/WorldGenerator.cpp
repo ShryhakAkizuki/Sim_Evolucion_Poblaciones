@@ -33,6 +33,25 @@ WorldGenerator::WorldGenerator(uint64_t worldSeed, std::shared_ptr<BiomeSystem> 
     initializeBiomeSeeds();
 }
 
+WorldGenerator::WorldGenerator(uint64_t worldSeed,  const LakeConfig& lake_config)
+    : _worldSeed(worldSeed), _rng(_worldSeed), _lakeConfig(lake_config) {
+    
+    _biomeSystem = std::make_shared<BiomeSystem>(static_cast<uint32_t>(_worldSeed));
+    _globalNoise = std::make_shared<PerlinNoise>(_worldSeed);
+    initializeBiomeSeeds();
+}
+
+WorldGenerator::WorldGenerator(uint64_t worldSeed, std::shared_ptr<BiomeSystem> biomeSystem, const LakeConfig& lake_config)
+    : _worldSeed(worldSeed), _rng(_worldSeed), _biomeSystem(std::move(biomeSystem)), _lakeConfig(lake_config) {
+    
+    if (!_biomeSystem) {
+        _biomeSystem = std::make_shared<BiomeSystem>(static_cast<uint32_t>(_worldSeed));
+        initializeDefaultBiomes();
+    }
+    _globalNoise = std::make_shared<PerlinNoise>(_worldSeed);
+    initializeBiomeSeeds();
+}
+
 WorldGenerator::WorldGenerator(const WorldGenerator& other)
     : _worldSeed(other._worldSeed),
       _rng(other._worldSeed),

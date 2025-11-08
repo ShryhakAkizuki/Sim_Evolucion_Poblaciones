@@ -10,7 +10,7 @@ Bioma::Bioma(int id, std::string nombre, Color color,
              float movMedia, float expanMedia, float reducMedia,
              float tempStd, float humStd, float radStd,
              float movStd, float expanStd, float reducStd,
-             uint32_t seed)
+             uint64_t seed)
     : _id(id)
     , _nombre(std::move(nombre))
     , _color(color)
@@ -138,7 +138,7 @@ Bioma& Bioma::operator=(Bioma&& other) noexcept {
 
 // ----- Métodos privados -----
 
-void Bioma::inicializarRNG(uint32_t seed) {
+void Bioma::inicializarRNG(uint64_t seed) {
     _gen = std::mt19937(seed + _id); // Semilla única por bioma
 }
 

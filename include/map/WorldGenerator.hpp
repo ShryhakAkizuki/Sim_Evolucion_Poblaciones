@@ -28,7 +28,7 @@ struct LakeConfig {
     float threshold = -0.4f;     // Umbral para generar lagos
     
     LakeConfig() = default;
-    LakeConfig(float scl, float thresh, float w) 
+    LakeConfig(float scl, float thresh) 
         : scale(scl), threshold(thresh){}
 };
 
@@ -48,7 +48,12 @@ public:
     // ----- Constructores -----
     WorldGenerator();
     explicit WorldGenerator(uint64_t worldSeed);
+
     WorldGenerator(uint64_t worldSeed, std::shared_ptr<BiomeSystem> biomeSystem);
+    WorldGenerator(uint64_t worldSeed, const LakeConfig& lake_config);
+
+    WorldGenerator(uint64_t worldSeed, std::shared_ptr<BiomeSystem> biomeSystem, const LakeConfig& lake_config);
+    
     WorldGenerator(const WorldGenerator& other);
     WorldGenerator(WorldGenerator&& other) noexcept;
     
