@@ -8,9 +8,8 @@ CameraController::CameraController(const sf::Vector2f& initialPosition, const sf
       _minZoom(0.1f), _maxZoom(5.0f), _worldBounds(worldBounds) {
     
     _cameraView.setCenter(_cameraPosition);
-    _cameraView.setSize(800, 600); // Tamaño inicial
-    std::cout << "CameraController inicializado en posición (" 
-              << initialPosition.x << ", " << initialPosition.y << ")\n";
+    _cameraView.setSize(800, 600);
+    std::cout << "CameraController inicializado\n";
 }
 
 void CameraController::move(const sf::Vector2f& offset) {
@@ -43,23 +42,19 @@ void CameraController::setViewSize(const sf::Vector2f& size) {
 void CameraController::enforceBounds() {
     sf::Vector2f viewSize = _cameraView.getSize();
     
-    // Calcular los límites de la cámara
     float left = _cameraPosition.x - viewSize.x / 2.0f;
     float top = _cameraPosition.y - viewSize.y / 2.0f;
-    float right = left + viewSize.x;
-    float bottom = top + viewSize.y;
     
-    // Ajustar posición si se sale de los límites
     if (left < _worldBounds.left) {
         _cameraPosition.x = _worldBounds.left + viewSize.x / 2.0f;
     }
-    if (right > _worldBounds.left + _worldBounds.width) {
+    if (left + viewSize.x > _worldBounds.left + _worldBounds.width) {
         _cameraPosition.x = (_worldBounds.left + _worldBounds.width) - viewSize.x / 2.0f;
     }
     if (top < _worldBounds.top) {
         _cameraPosition.y = _worldBounds.top + viewSize.y / 2.0f;
     }
-    if (bottom > _worldBounds.top + _worldBounds.height) {
+    if (top + viewSize.y > _worldBounds.top + _worldBounds.height) {
         _cameraPosition.y = (_worldBounds.top + _worldBounds.height) - viewSize.y / 2.0f;
     }
 }

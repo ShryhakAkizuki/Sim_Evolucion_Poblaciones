@@ -3,9 +3,11 @@
 #include <unordered_map>
 #include "map/Tile.hpp"
 #include "map/Chunk.hpp"
+#include "biome/BiomeSystem.hpp"
 
 class TileDrawer {
 private:
+    std::shared_ptr<BiomeSystem> _biomeSystem;
     std::unordered_map<int, sf::Color> _biomeColors;
     sf::Color _waterColor;
     sf::Color _defaultColor;
@@ -13,7 +15,8 @@ private:
     void initializeBiomeColors();
 
 public:
-    TileDrawer();
+    
+    TileDrawer(std::shared_ptr<BiomeSystem> biomeSystem = nullptr);
     
     sf::Color getTileColor(const Tile& tile) const;
     sf::Color getBiomeColor(int biomeId) const;
@@ -24,6 +27,7 @@ public:
                                        float tileSize) const;
     
     // Setters para personalización
-    void setBiomeColor(int biomeId, const sf::Color& color);
+    void setBiomeSystem(std::shared_ptr<BiomeSystem> biomeSystem);
     void setWaterColor(const sf::Color& color);
+  
 };

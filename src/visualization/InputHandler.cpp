@@ -65,16 +65,6 @@ void InputHandler::handleMousePress(const sf::Event::MouseButtonEvent& mouseEven
 void InputHandler::handleMouseRelease(const sf::Event::MouseButtonEvent& mouseEvent) {
     if (mouseEvent.button == sf::Mouse::Left) {
         _mouseState.leftPressed = false;
-        
-        // Verificar si fue un click simple (no drag)
-        if (_currentState == InputState::DRAGGING) {
-            sf::Vector2i delta = _mouseState.position - _mouseState.lastPosition;
-            if (std::abs(delta.x) < 3 && std::abs(delta.y) < 3) {
-                // Fue un click simple, no un drag
-                // Podrías añadir funcionalidad aquí si lo necesitas
-            }
-        }
-        
         _currentState = InputState::IDLE;
         
     } else if (mouseEvent.button == sf::Mouse::Right) {
@@ -89,13 +79,15 @@ void InputHandler::handleMouseMove(const sf::Event::MouseMoveEvent& mouseEvent,
     _mouseState.position = sf::Vector2i(mouseEvent.x, mouseEvent.y);
     
     if (_currentState == InputState::DRAGGING && _mouseState.leftPressed) {
-        // Calcular el desplazamiento en coordenadas del mundo
+        // Calcular el desplazamiento en coordenadas del mundo de forma más eficiente
         sf::Vector2f currentWorldPos = camera.screenToWorld(_mouseState.position, window);
-        sf::Vector2f delta = _dragStartWorldPos - currentWorldPos;
-        sf::Vector2f newCameraPos = _cameraStartPos + delta;
+        
+        // Usar desplazamiento incremental en lugar de recalcular desde el inicio cada vez
+        sf::Vector2f lastWorldPos = camera.screenToWorld(_mouseState.lastPosition, window);
+        sf::Vector2f delta = lastWorldPos - currentWorldPos;
         
         if (_onCameraMove) {
-            _onCameraMove(newCameraPos);
+            _onCameraMove(camera.getPosition() + delta);
         }
     }
 }
@@ -119,7 +111,7 @@ void InputHandler::handleMouseWheel(const sf::Event::MouseWheelScrollEvent& whee
 }
 
 void InputHandler::update(float deltaTime) {
-    // Aquí podrías añadir lógica de input continuo si es necesario
+    // Podemos añadir interpolación aquí si es necesario
 }
 
 void InputHandler::setCameraMoveCallback(std::function<void(const sf::Vector2f&)> callback) {

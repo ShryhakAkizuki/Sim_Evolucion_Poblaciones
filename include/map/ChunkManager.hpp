@@ -211,13 +211,9 @@ public:
         
         if (_worldGenerator) {
             chunk = _worldGenerator->generateChunk(coord.x(), coord.y(), _chunk_size);
-            std::cout << "DEBUG: Chunk generado proceduralmente: (" 
-                      << coord.x() << ", " << coord.y() << ")\n";
         } else {
             // Fallback: chunk vacío
             chunk = std::make_shared<Chunk>(coord.x(), coord.y(), _chunk_size);
-            std::cout << "DEBUG: Chunk creado vacío (sin generador): (" 
-                      << coord.x() << ", " << coord.y() << ")\n";
         }
         
         _chunks[coord] = chunk;
@@ -320,7 +316,6 @@ private:
         
         // Verificar si el archivo existe
         if (!std::filesystem::exists(filename)) {
-            std::cout << "DEBUG: Archivo no existe: " << filename << "\n";
             return nullptr;
         }
 

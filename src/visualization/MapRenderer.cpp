@@ -2,23 +2,33 @@
 #include <iostream>
 
 MapRenderer::MapRenderer(ChunkManager& chunkManager)
-    : _chunkManager(chunkManager), _tileDrawer() {
+    : _chunkManager(chunkManager), _tileDrawer() {  // TileDrawer sin biomeSystem inicial
+    
+    // Intentar obtener el sistema de biomas del ChunkManager
+    auto worldGenerator = _chunkManager.getWorldGenerator();
+    if (worldGenerator) {
+        auto biomeSystem = worldGenerator->getBiomeSystem();
+        _tileDrawer.setBiomeSystem(biomeSystem);
+    }
+    
     std::cout << "MapRenderer inicializado\n";
 }
 
 void MapRenderer::render(sf::RenderTarget& target, const CameraController& camera) {
-    // Usar getVisibleWorldBounds() sin parámetros
     sf::FloatRect visibleBounds = camera.getVisibleWorldBounds();
     
-    // Calcular rango de chunks visibles
+    // Calcular rango de chunks visibles de forma más precisa
     int chunkSize = static_cast<int>(_chunkManager.getChunkSize());
     int startChunkX = static_cast<int>(std::floor(visibleBounds.left / chunkSize));
     int startChunkY = static_cast<int>(std::floor(visibleBounds.top / chunkSize));
     int endChunkX = static_cast<int>(std::ceil((visibleBounds.left + visibleBounds.width) / chunkSize));
     int endChunkY = static_cast<int>(std::ceil((visibleBounds.top + visibleBounds.height) / chunkSize));
     
-    int renderedChunks = 0;
-    int renderedTiles = 0;
+    // Limitar el rango para evitar bucles excesivos
+    startChunkX = std::max(startChunkX, -100);
+    startChunkY = std::max(startChunkY, -100);
+    endChunkX = std::min(endChunkX, 100);
+    endChunkY = std::min(endChunkY, 100);
     
     // Renderizar chunks visibles
     for (int chunkX = startChunkX; chunkX <= endChunkX; ++chunkX) {
@@ -28,23 +38,16 @@ void MapRenderer::render(sf::RenderTarget& target, const CameraController& camer
             if (_chunkManager.HasChunk(coord)) {
                 auto chunk = _chunkManager.GetChunk(coord);
                 if (chunk) {
-                    renderChunk(target, chunk, camera);
-                    renderedChunks++;
-                    renderedTiles += chunk->getChunkSize() * chunk->getChunkSize();
+                    renderChunk(target, chunk);
                 }
             }
         }
     }
-    
-    // Debug opcional
-    // std::cout << "Rendered " << renderedChunks << " chunks, " << renderedTiles << " tiles\n";
 }
 
-void MapRenderer::renderChunk(sf::RenderTarget& target, const std::shared_ptr<Chunk>& chunk, 
-                              const CameraController& camera) {
-    float tileSize = 1.0f; // Cada tile es 1x1 unidad mundial
+void MapRenderer::renderChunk(sf::RenderTarget& target, const std::shared_ptr<Chunk>& chunk) {
+    float tileSize = 1.0f;
     
-    // Verificar si el chunk está en cache
     ChunkCoord coord(chunk->getChunkX(), chunk->getChunkY());
     auto cacheIt = _chunkCache.find(coord);
     
@@ -55,7 +58,6 @@ void MapRenderer::renderChunk(sf::RenderTarget& target, const std::shared_ptr<Ch
         cacheIt = _chunkCache.find(coord);
     }
     
-    // Dibujar el chunk desde cache
     if (cacheIt != _chunkCache.end()) {
         target.draw(cacheIt->second);
     }

@@ -10,13 +10,7 @@ private:
     ChunkManager& _chunkManager;
     TileDrawer _tileDrawer;
     
-    // Cache de sprites para optimización
     std::unordered_map<ChunkCoord, sf::VertexArray> _chunkCache;
-    
-    void renderChunk(sf::RenderTarget& target, const std::shared_ptr<Chunk>& chunk, 
-                    const CameraController& camera);
-    void renderTile(sf::RenderTarget& target, const Tile& tile, 
-                   float worldX, float worldY, float tileSize);
     
 public:
     MapRenderer(ChunkManager& chunkManager);
@@ -24,4 +18,18 @@ public:
     void render(sf::RenderTarget& target, const CameraController& camera);
     void clearCache();
     void updateCacheForChunk(const ChunkCoord& coord);
+    
+    // Nuevo método para actualizar el sistema de biomas
+    void setBiomeSystem(std::shared_ptr<BiomeSystem> biomeSystem) {
+        _tileDrawer.setBiomeSystem(biomeSystem);
+        clearCache(); // Limpiar cache porque los colores pueden haber cambiado
+    }
+    
+    TileDrawer& getTileDrawer() { return _tileDrawer; }
+    const TileDrawer& getTileDrawer() const { return _tileDrawer; }
+
+private:
+    void renderChunk(sf::RenderTarget& target, const std::shared_ptr<Chunk>& chunk);
+    void renderTile(sf::RenderTarget& target, const Tile& tile, 
+                   float worldX, float worldY, float tileSize);
 };
