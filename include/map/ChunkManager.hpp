@@ -292,6 +292,8 @@ private:
     }
 
     void Initializate_All_Chunks(){
+        
+        _worldGenerator->initializeBiomeSeeds(_Initial_Global_size*5);
         // Calcular cuántos chunks necesitamos para cubrir el área global
         int chunks_needed = _Initial_Global_size / _chunk_size;
         int chunk_radius = chunks_needed / 2;

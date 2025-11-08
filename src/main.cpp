@@ -77,7 +77,7 @@ int main(){
     auto worldGenerator = std::make_shared<WorldGenerator>(worldSeed, biomeSystem, Parametros_Lago);
 
     // Definir Gestor de Chunks:
-    ChunkManager chunkManager(16, worldGenerator, 8, 12, 1000);
+    ChunkManager chunkManager(16, worldGenerator, 8, 12, 1600);
 
     chunkManager.generarRegionInicial(100,100,100);
 

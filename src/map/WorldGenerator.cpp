@@ -198,15 +198,15 @@ void WorldGenerator::initializeDefaultBiomes() {
     ));
 }
 
-void WorldGenerator::initializeBiomeSeeds() {
+void WorldGenerator::initializeBiomeSeeds(float Area) {
     if (!_biomeSystem) return;
     
     _biomeSeeds.clear();
-    std::uniform_real_distribution<float> posDist(-500.0f, 500.0f);
+    std::uniform_real_distribution<float> posDist(-Area/2, Area/2);
     std::uniform_real_distribution<float> strengthDist(0.5f, 2.0f);
     std::uniform_int_distribution<int> biomeDist(0, _biomeSystem->getCantidadBiomas() - 1);
     
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < Area/10; ++i) {
         _biomeSeeds.push_back(BiomeSeed(
             biomeDist(_rng),
             posDist(_rng),

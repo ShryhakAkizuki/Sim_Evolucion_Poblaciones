@@ -69,6 +69,7 @@ public:
     std::shared_ptr<Chunk> generateChunk(int chunkX, int chunkY, uint32_t chunkSize);
     void setBiomeSystem(std::shared_ptr<BiomeSystem> biomeSystem);
     void actualizarEstadosBiomas(float horaDelDia);
+    void initializeBiomeSeeds(float Area = 1000);
 
     // Lagos
     void setLakeConfig(const LakeConfig& config) { _lakeConfig = config; }
@@ -79,7 +80,6 @@ public:
 
 private:
     // ----- Métodos de generación -----
-    void initializeBiomeSeeds();
     void assignBiomesToChunk(Chunk& chunk);
     
     void generateLakes(Chunk& chunk);
