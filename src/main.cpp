@@ -4,7 +4,7 @@
 #include "map/WorldGenerator.hpp"
 #include "biome/BiomeSystem.hpp"
 #include "biome/Biome.hpp"
-#include "visualization/GameWindow.hpp"
+// #include "visualization/GameWindow.hpp"
 
 #include <iostream>
 #include <chrono>
@@ -76,21 +76,21 @@ int main(){
     LakeConfig Parametros_Lago (0.01f, -0.4f);
     auto worldGenerator = std::make_shared<WorldGenerator>(worldSeed, biomeSystem, Parametros_Lago);
 
-    // Definir Gestor de Chunks:
-    ChunkManager chunkManager(16, worldGenerator, 8, 12, 1600);
+    // // Definir Gestor de Chunks:
+    // ChunkManager chunkManager(16, worldGenerator, 8, 12, 1600);
 
-    chunkManager.generarRegionInicial(100,100,100);
+    // chunkManager.generarRegionInicial(100,100,100);
 
-    std::cout << "=== SISTEMA DE VISUALIZACION CON SFML ===\n";
+    // std::cout << "=== SISTEMA DE VISUALIZACION CON SFML ===\n";
 
-    std::cout << "Iniciando visualizacion SFML...\n";
-    std::cout << "   Controles:\n";
-    std::cout << "   - Click izquierdo + arrastrar: Mover camara\n";
-    std::cout << "   - Rueda del mouse: Zoom in/out\n";
-    std::cout << "   - Click derecho: Informacion del tile\n";
+    // std::cout << "Iniciando visualizacion SFML...\n";
+    // std::cout << "   Controles:\n";
+    // std::cout << "   - Click izquierdo + arrastrar: Mover camara\n";
+    // std::cout << "   - Rueda del mouse: Zoom in/out\n";
+    // std::cout << "   - Click derecho: Informacion del tile\n";
     
-    GameWindow gameWindow(chunkManager, 1920, 1080);
-    gameWindow.run();
+    // GameWindow gameWindow(chunkManager, 1920, 1080);
+    // gameWindow.run();
 
 
   return 0;

@@ -4,10 +4,11 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <functional>
+#include <utility>
 
 #include <fstream>
 #include <filesystem>
-#include <String>
+#include <string>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -15,7 +16,6 @@
 #include <unistd.h>
 #include <limits.h>
 #endif
-#include <psapi.h>
 
 #include "map/ChunkCord.hpp"
 #include "map/Chunk.hpp"
@@ -47,7 +47,10 @@ public:
                           uint32_t keep_loaded_distance = 12, 
                           uint32_t Initial_Global_size = 1000, 
                           uint64_t worldSeed = 12345) : 
-    _chunk_size(chunk_size), _simulation_distance(simulation_distance), _keep_loaded_distance(keep_loaded_distance), _Initial_Global_size(Initial_Global_size) {
+    _chunk_size(chunk_size), 
+    _simulation_distance(simulation_distance), 
+    _keep_loaded_distance(keep_loaded_distance), 
+    _Initial_Global_size(Initial_Global_size) {
         _worldGenerator = std::make_shared<WorldGenerator>(worldSeed);
         Initializate_All_Chunks();
     }
@@ -57,7 +60,11 @@ public:
                           uint32_t simulation_distance = 8, 
                           uint32_t keep_loaded_distance = 12, 
                           uint32_t Initial_Global_size = 1000) : 
-    _chunk_size(chunk_size), _simulation_distance(simulation_distance), _keep_loaded_distance(keep_loaded_distance), _Initial_Global_size(Initial_Global_size), _worldGenerator(std::move(worldGenerator)) {
+    _chunk_size(chunk_size), 
+    _simulation_distance(simulation_distance), 
+    _keep_loaded_distance(keep_loaded_distance), 
+    _Initial_Global_size(Initial_Global_size), 
+    _worldGenerator(std::move(worldGenerator)) {
         
         if (!_worldGenerator) {
             _worldGenerator = std::make_shared<WorldGenerator>(12345);
@@ -67,12 +74,20 @@ public:
 
 
     ChunkManager(const ChunkManager& other) :          
-    _chunk_size(other._chunk_size), _simulation_distance(other._simulation_distance), _keep_loaded_distance(other._keep_loaded_distance), _Initial_Global_size(other._Initial_Global_size),
-    _chunks(other._chunks), _worldGenerator(other._worldGenerator) {}
+    _chunks(other._chunks), 
+    _chunk_size(other._chunk_size), 
+    _simulation_distance(other._simulation_distance), 
+    _keep_loaded_distance(other._keep_loaded_distance), 
+    _Initial_Global_size(other._Initial_Global_size),
+    _worldGenerator(other._worldGenerator) {}
 
     ChunkManager(ChunkManager&& other) noexcept :              
-    _chunk_size(other._chunk_size), _simulation_distance(other._simulation_distance), _keep_loaded_distance(other._keep_loaded_distance), _Initial_Global_size(other._Initial_Global_size),
-    _chunks(std::move(other._chunks)), _worldGenerator(std::move(other._worldGenerator)) {
+    _chunks(std::move(other._chunks)), 
+    _chunk_size(other._chunk_size), 
+    _simulation_distance(other._simulation_distance), 
+    _keep_loaded_distance(other._keep_loaded_distance), 
+    _Initial_Global_size(other._Initial_Global_size),
+    _worldGenerator(std::move(other._worldGenerator)) {
  
         other._chunk_size = 16;
         other._simulation_distance = 8;

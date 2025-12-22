@@ -56,14 +56,16 @@ public:
     }
 
 
-    Chunk(const Chunk& other) : 
-    _chunkX(other._chunkX), _chunkY(other._chunkY), 
-    _chunk_size(other._chunk_size), _tiles(other._tiles),
+    Chunk(const Chunk& other) :  
+    _tiles(other._tiles),
+    _chunkX(other._chunkX), _chunkY(other._chunkY),
+    _chunk_size(other._chunk_size),
     _state(other._state) {}
 
     Chunk(Chunk&& other) noexcept :
+    _tiles(std::move(other._tiles)),
     _chunkX(other._chunkX), _chunkY(other._chunkY), 
-    _chunk_size(other._chunk_size), _tiles(std::move(other._tiles)),
+    _chunk_size(other._chunk_size),
     _state(other._state) {
         other._chunkX = 0;
         other._chunkY = 0;
@@ -109,14 +111,14 @@ public:
     ConstRowProxy operator[](int y) const {return ConstRowProxy(_tiles[y]); } 
 
     Tile& at(int x, int y){
-        if(x < 0 || x >= _chunk_size || y < 0 || y >= _chunk_size){
+        if(x < 0 || static_cast<uint32_t>(x) >= _chunk_size || y < 0 || static_cast<uint32_t>(y) >= _chunk_size){
             throw std::out_of_range("Coordinates out of bounds");
         }
         return _tiles[y][x];
     }
 
     const Tile& at(int x, int y) const {
-        if(x < 0 || x >= _chunk_size || y < 0 || y >= _chunk_size){
+        if(x < 0 || static_cast<uint32_t>(x) >= _chunk_size || y < 0 || static_cast<uint32_t>(y) >= _chunk_size){
             throw std::out_of_range("Coordinates out of bounds");
         }
         return _tiles[y][x];

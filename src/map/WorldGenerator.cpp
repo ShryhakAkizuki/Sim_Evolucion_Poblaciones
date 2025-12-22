@@ -63,20 +63,22 @@ WorldGenerator::WorldGenerator(const WorldGenerator& other)
 }
 
 WorldGenerator::WorldGenerator(WorldGenerator&& other) noexcept
-    : _worldSeed(std::exchange(other._worldSeed, 12345)),
+    : _worldSeed(other._worldSeed),
       _rng(std::move(other._rng)),
-      _biomeSystem(std::move(other._biomeSystem)),
       _biomeSeeds(std::move(other._biomeSeeds)),
+      _biomeSystem(std::move(other._biomeSystem)),
       _lakeConfig(std::move(other._lakeConfig)),
-      _globalNoise(std::move(other._globalNoise)){}
+      _globalNoise(std::move(other._globalNoise)){
+        other._worldSeed = 12345;
+      }
 
 // ----- Operadores -----
 WorldGenerator& WorldGenerator::operator=(const WorldGenerator& other) {
     if (this != &other) {
         _worldSeed = other._worldSeed;
         _rng = std::mt19937_64(_worldSeed);
-        _biomeSystem = std::make_shared<BiomeSystem>(*other._biomeSystem);
         _biomeSeeds = other._biomeSeeds;
+        _biomeSystem = std::make_shared<BiomeSystem>(*other._biomeSystem);
         _lakeConfig = other._lakeConfig;
         _globalNoise = std::make_shared<PerlinNoise>(_worldSeed);
     }
@@ -85,7 +87,9 @@ WorldGenerator& WorldGenerator::operator=(const WorldGenerator& other) {
 
 WorldGenerator& WorldGenerator::operator=(WorldGenerator&& other) noexcept {
     if (this != &other) {
-        _worldSeed = std::exchange(other._worldSeed, 12345);
+        _worldSeed = other._worldSeed;
+        other._worldSeed = 12345;
+
         _rng = std::move(other._rng);
         _biomeSystem = std::move(other._biomeSystem);
         _biomeSeeds = std::move(other._biomeSeeds);

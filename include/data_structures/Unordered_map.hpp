@@ -49,10 +49,10 @@ public:
     }
 
     Unordered_map(Unordered_map&& other) noexcept
-    : _buckets(std::move(other._buckets)),
-    _size(other._size),
+    : _size(other._size),
     _bucket_count(other._bucket_count),
-    _max_load_factor(other._max_load_factor) {
+    _max_load_factor(other._max_load_factor), 
+    _buckets(std::move(other._buckets)){
         
         other._size = 0;
         other._bucket_count = 16;  
