@@ -1,8 +1,7 @@
-// BiomeSystem.cpp
-#include "biome/BiomeSystem.hpp"
-#include <algorithm>
-#include <utility>
 #include <iostream>
+#include <utility>
+
+#include "biome/BiomeSystem.hpp"
 
 // ----- Constructores -----
 
@@ -13,7 +12,16 @@ BiomeSystem::BiomeSystem(uint64_t worldSeed)
 // Constructor de copia
 BiomeSystem::BiomeSystem(const BiomeSystem& other) 
 : _worldSeed(other._worldSeed) {
-    copiarDesde(other);
+
+    DynamicArray<std::unique_ptr<Bioma>> new_biomas(other._biomas.size());
+    
+    for (size_t i = 0; i < other._biomas.size(); ++i) {
+        if (other._biomas[i]) {
+            new_biomas[i] = std::make_unique<Bioma>(*(other._biomas[i]));
+        }
+    }
+    
+    _biomas = std::move(new_biomas);
 }
 
 // Constructor de movimiento
@@ -27,9 +35,18 @@ BiomeSystem::BiomeSystem(BiomeSystem&& other) noexcept
 BiomeSystem& BiomeSystem::operator=(const BiomeSystem& other) {
     if (this != &other) {
         _worldSeed = other._worldSeed;
-        limpiar();
-        copiarDesde(other);
+        
+        DynamicArray<std::unique_ptr<Bioma>> new_biomas(other._biomas.size());
+        
+        for (size_t i = 0; i < other._biomas.size(); ++i) {
+            if (other._biomas[i]) {
+                new_biomas[i] = std::make_unique<Bioma>(*(other._biomas[i]));
+            }
+        }
+        
+        _biomas = std::move(new_biomas);
     }
+
     return *this;
 }
 
@@ -44,7 +61,7 @@ BiomeSystem& BiomeSystem::operator=(BiomeSystem&& other) noexcept {
 
 // ----- Métodos públicos -----
 
-void BiomeSystem::registrarBioma(std::shared_ptr<Bioma> bioma) {
+void BiomeSystem::registrarBioma(std::unique_ptr<Bioma>&& bioma) {
     if (!bioma) return;
     
     int id = bioma->getId();
@@ -63,37 +80,19 @@ void BiomeSystem::registrarBioma(std::shared_ptr<Bioma> bioma) {
     _biomas[id] = std::move(bioma);
 }
 
-std::shared_ptr<Bioma> BiomeSystem::getBioma(int id) {
+const Bioma* BiomeSystem::getBioma(int id) const {
     if (id < 0 || static_cast<size_t>(id) >= _biomas.size()) {
         return nullptr;
     }
     
-    return _biomas[id];
+    return _biomas[id].get(); 
 }
 
-std::shared_ptr<const Bioma> BiomeSystem::getBioma(int id) const {
-    if (id < 0 || static_cast<size_t>(id) >= _biomas.size()) {
-        return nullptr;
-    }
-    
-    return _biomas[id]; 
-}
-
-std::shared_ptr<Bioma> BiomeSystem::buscarPorNombre(const std::string& nombre) {
+const Bioma* BiomeSystem::buscarPorNombre(const std::string& nombre) const {
     
     for (size_t i = 0; i < _biomas.size(); ++i) {
         if (_biomas[i] && _biomas[i]->getNombre() == nombre) {
-            return _biomas[i];
-        }
-    }
-    return nullptr;
-}
-
-std::shared_ptr<const Bioma> BiomeSystem::buscarPorNombre(const std::string& nombre) const {
-    
-    for (size_t i = 0; i < _biomas.size(); ++i) {
-        if (_biomas[i] && _biomas[i]->getNombre() == nombre) {
-            return _biomas[i];
+            return _biomas[i].get();
         }
     }
     return nullptr;
@@ -107,6 +106,14 @@ void BiomeSystem::actualizarTodosBiomas(float horaDelDia) {
     }
 }
 
+DynamicArray<int> BiomeSystem::getTodosBiomasID() const {
+    DynamicArray<int> IDs;
+    for (const auto& bioma : _biomas) {
+        if (bioma) IDs.push_back(bioma->getId());
+    }
+    return IDs;
+}
+
 void BiomeSystem::limpiar() {
     _biomas.clear();
 }
@@ -115,14 +122,4 @@ bool BiomeSystem::contieneBioma(int id) const {
     return id >= 0 && 
            static_cast<size_t>(id) < _biomas.size() && 
            _biomas[id] != nullptr;
-}
-
-// ----- Métodos privados -----
-
-void BiomeSystem::copiarDesde(const BiomeSystem& other) {
-
-    _biomas = DynamicArray<std::shared_ptr<Bioma>>(other._biomas.size());
-    for (size_t i = 0; i < other._biomas.size(); ++i) {
-        _biomas[i] = other._biomas[i]; 
-    }
 }

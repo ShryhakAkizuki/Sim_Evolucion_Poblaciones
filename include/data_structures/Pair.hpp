@@ -1,6 +1,4 @@
 #pragma once
-#include <memory>
-#include <cstdint>
 #include <initializer_list>
 #include <stdexcept>
 #include <functional>                           // Para std::hash
@@ -16,12 +14,25 @@ public:
     // ----- Constructores -----
     Pair() = default;
 
-    explicit Pair(const T1& first, const T2& second) :
-    _first(first), _second(second) {}
+    // Constructor normal
+    Pair(const T1& first, const T2& second) 
+        : _first(first), _second(second) {}
+    
+    // Constructor con movimiento del segundo
+    Pair(const T1& first, T2&& second) 
+        : _first(first), _second(std::move(second)) {}
+    
+    // Constructor con movimiento de ambos
+    Pair(T1&& first, T2&& second) 
+        : _first(std::move(first)), _second(std::move(second)) {}
+    
+    // Constructor template para perfect forwarding
+    template<typename U1, typename U2>
+    Pair(U1&& first, U2&& second) 
+        : _first(std::forward<U1>(first)), 
+          _second(std::forward<U2>(second)) {}
 
-    Pair(const Pair& other) : 
-    _first(other._first), _second(other._second) {}
-
+    Pair(const Pair& other) = default;    
     Pair(Pair&& other) noexcept = default;
 
     Pair(std::initializer_list<typename std::common_type<T1>::type> init) {
@@ -38,22 +49,9 @@ public:
     ~Pair() = default;
 
     // ----- Operadores -----
-    Pair& operator=(const Pair& other){
-        if(this != &other){
-            _first = other._first;
-            _second = other._second;
-        }
-        return *this;
-    }
-
-    Pair& operator=(Pair&& other) noexcept {
-        if(this != &other){
-            _first = std::move(other._first);
-            _second = std::move(other._second);
-        }
-        return *this;
-    }
-
+    Pair& operator=(const Pair&) = default;
+    Pair& operator=(Pair&&) noexcept = default;
+    
     bool operator==(const Pair& other) const{
         return _first == other._first && _second == other._second;
     }

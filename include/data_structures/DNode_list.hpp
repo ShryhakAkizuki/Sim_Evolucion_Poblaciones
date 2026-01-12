@@ -1,60 +1,83 @@
 #pragma once
 #include <memory>
-#include <cstdint>
-#include <initializer_list>
-#include <stdexcept>
 
 template<typename T>
 class DNode_list {
 protected:
     // ----- Atributos -----
-    std::shared_ptr<DNode_list> _forward = nullptr;
-    std::weak_ptr<DNode_list> _backward;
+    std::unique_ptr<DNode_list> _forward = nullptr;
+    DNode_list* _backward = nullptr;
 
-    T _data = {};
+    T _data = T();
 
 public:
     // ----- Constructores -----
-    DNode_list() = default;                                                 // Constructor por defecto
+    DNode_list() = default;                                                             // Constructor por defecto
 
-    explicit DNode_list(const T& data):                                     // Constructor con dato 
-    _data(data) {}
+    explicit DNode_list(const T& data) : _data(data) {}                                 // Constructor con dato 
+    explicit DNode_list(T&& data) : _data(std::move(data)) {}                           // Constructor con dato 
+    
+    explicit DNode_list(std::unique_ptr<DNode_list> forward, const T& data = T()) :     // Constructor con Nodo adelante
+        _forward(std::move(forward)), _data(data) {}
 
-    explicit DNode_list(T&& data):                                     // Constructor con dato 
-    _data(std::move(data)) {}
-
-    DNode_list(const T& data,                                      // Constructor con dato y nodos enlazados
-               std::shared_ptr<DNode_list> forward, 
-               std::shared_ptr<DNode_list> backward):
-    _data(data), _forward(std::move(forward)), _backward(std::weak_ptr<DNode_list>(backward)){}
-
-    DNode_list(DNode_list&& other) noexcept = default;                      // Constructor de movimiento
+    DNode_list(const T& data,                                                           // Constructor con dato y nodos enlazados
+               std::unique_ptr<DNode_list> forward, 
+               DNode_list* backward):
+    _data(data), _forward(std::move(forward)), _backward(backward){}
+    
+    DNode_list(const DNode_list& other) = delete;
+    DNode_list(DNode_list&& other) noexcept = default;                                  // Constructor de movimiento
 
     // ----- Destructor -----
     ~DNode_list() = default;
 
     // ----- Operadores -----
-    DNode_list& operator=(DNode_list&& other) noexcept = default;           // Operador de asignación por movimiento
+    DNode_list& operator=(const DNode_list& other) = delete;
+    DNode_list& operator=(DNode_list&& other) noexcept = default;                       // Operador de asignación por movimiento
 
     // ----- Métodos -----
     
-    //  Asignacion y retorno
-    const T& data() const { return _data; }
-    T& data() { return _data; }
+    //  Getters
+    const T& get_data() const { return _data; }
+    T& get_data() { return _data; }
 
-    std::shared_ptr<DNode_list> forward_ptr() { return _forward; }
-    std::shared_ptr<const DNode_list> forward_ptr() const { return _forward; }
+    DNode_list* get_forward() { return _forward.get(); }
+    const DNode_list* get_forward() const { return _forward.get(); }
+    
+    DNode_list* get_backward() { return _backward; }
+    const DNode_list* get_backward() const { return _backward; }
 
-    std::shared_ptr<DNode_list> backward_ptr() { return _backward.lock(); }
-    std::shared_ptr<const DNode_list> backward_ptr() const { return _backward.lock(); }
+    //  Setters
+    void set_data(const T& Value) {_data=Value; }
+    void set_data(const T&& Value) {_data=std::move(Value); }
 
-
-    void set_data(const T& data) { _data = data; }
-    void set_forward(std::shared_ptr<DNode_list> forward) { 
+    void set_forward(std::unique_ptr<DNode_list> forward) { 
+        if(forward != nullptr) forward->_backward = this;        
         _forward = std::move(forward); 
     }
-    void set_backward(std::shared_ptr<DNode_list> backward) { 
-         _backward = std::weak_ptr<DNode_list>(backward); 
+    
+    void set_backward(DNode_list* backward) { 
+         _backward = backward; 
     }
 
+    // Insert
+    void insert_after(std::unique_ptr<DNode_list> new_node) {
+        if(new_node == nullptr) return;
+
+        new_node->_backward = this;
+
+        if (_forward != nullptr) new_node->set_forward(std::move(_forward));
+
+        _forward = std::move(new_node);
+    }
+
+    //  Release
+    std::unique_ptr<DNode_list> release_forward() {
+        if (_forward != nullptr) _forward->_backward = nullptr;
+        return std::move(_forward);
+    }
+
+    // Comparadores
+    bool has_forward() const { return _forward != nullptr; }
+    bool has_backward() const { return _backward != nullptr; }
 };

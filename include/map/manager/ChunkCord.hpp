@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <initializer_list>
 #include <stdexcept>
-#include <cmath>    // Para std::abs, std::sqrt, std::pow, etc.
+#include <cmath>  
+
 #include "data_structures/Pair.hpp"
 
 class ChunkCoord: public Pair<int,int>{

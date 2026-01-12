@@ -1,16 +1,17 @@
 #pragma once
 #include <memory>
 #include <cstdint>
-#include <initializer_list>
-#include <stdexcept>
 #include <random>
-#include <cmath>
 
-#include "map/Chunk.hpp"
+#include "map/manager/Chunk.hpp"
+#include "map/manager/ChunkCord.hpp"
+
 #include "biome/BiomeSystem.hpp"
+
+#include "utils/PerlinNoise.hpp"
+
 #include "data_structures/DynamicArray.hpp"
 #include "data_structures/Pair.hpp"
-#include "utils/PerlinNoise.hpp"
 
 struct BiomeSeed {
     int biomeId;
@@ -39,21 +40,15 @@ private:
     std::mt19937_64 _rng;
     
     DynamicArray<BiomeSeed> _biomeSeeds;
-    std::shared_ptr<BiomeSystem> _biomeSystem;
 
     LakeConfig _lakeConfig;
-    std::shared_ptr<PerlinNoise> _globalNoise;
+    PerlinNoise _globalNoise;
 
 public:
     // ----- Constructores -----
-    WorldGenerator();
-    explicit WorldGenerator(uint64_t worldSeed);
+    explicit WorldGenerator(const BiomeSystem& Biomas, uint64_t worldSeed = 12345);
+    explicit WorldGenerator(const BiomeSystem& Biomas, const LakeConfig& lake_config, uint64_t worldSeed = 12345);
 
-    WorldGenerator(uint64_t worldSeed, std::shared_ptr<BiomeSystem> biomeSystem);
-    WorldGenerator(uint64_t worldSeed, const LakeConfig& lake_config);
-
-    WorldGenerator(uint64_t worldSeed, std::shared_ptr<BiomeSystem> biomeSystem, const LakeConfig& lake_config);
-    
     WorldGenerator(const WorldGenerator& other);
     WorldGenerator(WorldGenerator&& other) noexcept;
     
@@ -66,32 +61,23 @@ public:
 
     // ----- Métodos -----
     // Generacion
-    std::shared_ptr<Chunk> generateChunk(int chunkX, int chunkY, uint32_t chunkSize);
-    void setBiomeSystem(std::shared_ptr<BiomeSystem> biomeSystem);
-    void actualizarEstadosBiomas(float horaDelDia);
-    void initializeBiomeSeeds(float Area = 1000);
+    std::unique_ptr<Chunk> generateChunk(int chunkX, int chunkY, uint32_t chunkSize);
+    std::unique_ptr<Chunk> generateChunk(ChunkCoord coord, uint32_t chunkSize);
+    void initializeBiomeSeeds(const BiomeSystem& Biomas, float Area = 1000);
 
-    // Lagos
+    // Configuracion
     void setLakeConfig(const LakeConfig& config) { _lakeConfig = config; }
     const LakeConfig& getLakeConfig() const { return _lakeConfig; }
 
     uint64_t getWorldSeed() const { return _worldSeed; }
-    std::shared_ptr<BiomeSystem> getBiomeSystem() const { return _biomeSystem; }
+    void setWorldSeed(uint64_t worldSeed) { _worldSeed = worldSeed; }
 
 private:
     // ----- Métodos de generación -----
     void assignBiomesToChunk(Chunk& chunk);
-    
     void generateLakes(Chunk& chunk);
     
     // ----- Helpers -----
     int findClosestBiome(float worldX, float worldY) const;
     float calculateBiomeInfluence(const BiomeSeed& seed, float x, float y) const;
-    uint64_t getChunkSeed(int chunkX, int chunkY) const;
-    bool worldToChunkLocal(const Chunk& chunk, float worldX, float worldY, int& localX, int& localY) const;
-    float getChunkWorldX(const Chunk& chunk) const;
-    float getChunkWorldY(const Chunk& chunk) const;
-
-    // ----- Inicialización -----
-    void initializeDefaultBiomes();
 };

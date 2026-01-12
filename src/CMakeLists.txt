@@ -4,13 +4,15 @@
 add_library(engine
     biome/Biome.cpp
     biome/BiomeSystem.cpp
-    map/WorldGenerator.cpp
-    # visualization/CameraController.cpp
-    # visualization/GameWindows.cpp
-    # visualization/InputHandler.cpp
-    # visualization/MapRenderer.cpp
-    # visualization/TileDrawer.cpp
-    # visualization/ViewManager.cpp
+    
+    map/generator/WorldGenerator.cpp
+    map/manager/ChunkManager.cpp
+    map/WorldSystem.cpp
+
+    graphics/Camera.cpp
+    graphics/InputManager.cpp
+    graphics/TileRenderer.cpp
+    graphics/RenderSystem.cpp
 )
 
 target_include_directories(engine

@@ -1,16 +1,10 @@
 #pragma once
-#include <memory>
-#include <cstdint>
-#include <initializer_list>
-#include <stdexcept>
 #include <functional>                           // Para std::hash
 #include <algorithm>
 
-#include "data_structures/Double_Link_List.hpp"
+#include "data_structures/Double_Linked_List.hpp"
 #include "data_structures/DynamicArray.hpp"
 #include "data_structures/Pair.hpp"
-
-#include <iostream>
 
 template<typename Key, typename Value>
 class Unordered_map{
@@ -33,20 +27,11 @@ public:
     _bucket_count(bucket_count),
     _buckets(DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count)) {}
     
-    Unordered_map(size_t bucket_count, size_t max_load_factor) :
+    Unordered_map(size_t bucket_count, double max_load_factor) :
     _bucket_count(bucket_count), _max_load_factor(max_load_factor)
     ,_buckets(DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count)) {}
 
-    Unordered_map(const Unordered_map& other) 
-    : _size(other._size),
-    _bucket_count(other._bucket_count),
-    _max_load_factor(other._max_load_factor) {
-        
-        _buckets = DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count);
-        for (size_t i = 0; i < _bucket_count; ++i) {
-            _buckets[i] = other._buckets[i];  
-        }
-    }
+    Unordered_map(const Unordered_map& other) = delete;
 
     Unordered_map(Unordered_map&& other) noexcept
     : _size(other._size),
@@ -64,19 +49,7 @@ public:
 
     // ----- Operadores -----
 
-    Unordered_map& operator=(const Unordered_map& other){
-        if(this != &other){
-            _size = other._size;
-            _bucket_count = other._bucket_count;
-            _max_load_factor = other._max_load_factor;
-
-            _buckets = DynamicArray<Double_Linked_List<Pair<Key, Value>>>(_bucket_count);
-            for(size_t i = 0; i < _bucket_count; ++i){
-                _buckets[i] = other._buckets[i];
-            }
-        }
-        return *this;
-    }
+    Unordered_map& operator=(const Unordered_map& other) = delete;
 
     Unordered_map& operator=(Unordered_map&& other) noexcept {
         if(this != &other){
@@ -87,7 +60,6 @@ public:
             
             other._size = 0;
             other._bucket_count = 16;  
-            _buckets = DynamicArray<Double_Linked_List<Pair<Key, Value>>>(other._bucket_count);        
         }
         return *this;
     }
@@ -208,6 +180,75 @@ public:
 
     void insert(const Pair<Key, Value>& pair){ 
         insert(pair.first(), pair.second());
+    }
+
+    void insert(Key&& key, Value&& value) {
+        if (load_factor() >= _max_load_factor) {
+            rehash(_bucket_count * 2);
+        }
+
+        size_t bucket_index = hash_function(key);
+        auto& bucket_list = _buckets[bucket_index];
+
+        for (auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if (it->first() == key) {
+                it->second() = std::move(value);
+                return;
+            }
+        }
+        
+        bucket_list.push_back(Pair<Key, Value>(std::move(key), std::move(value)));
+        _size++;
+    }
+
+    // ----- EMPLACE - Construye en el lugar -----
+    template<typename... Args>
+    Value& emplace(const Key& key, Args&&... args) {
+        if (load_factor() >= _max_load_factor) {
+            rehash(_bucket_count * 2);
+        }
+
+        size_t bucket_index = hash_function(key);
+        auto& bucket_list = _buckets[bucket_index];
+
+        // Buscar si ya existe
+        for (auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if (it->first() == key) {
+                // Ya existe - asignar nuevo valor
+                it->second() = Value(std::forward<Args>(args)...);
+                return it->second();
+            }
+        }
+
+        // No existe - crear nuevo con perfect forwarding
+        bucket_list.push_back(Pair<Key, Value>(key, Value(std::forward<Args>(args)...)));
+        _size++;
+        return bucket_list.back().second();
+    }
+
+    // Versión con key por movimiento
+    template<typename... Args>
+    Value& emplace(Key&& key, Args&&... args) {
+        if (load_factor() >= _max_load_factor) {
+            rehash(_bucket_count * 2);
+        }
+
+        size_t bucket_index = hash_function(key);
+        auto& bucket_list = _buckets[bucket_index];
+
+        // Buscar si ya existe
+        for (auto it = bucket_list.begin(); it != bucket_list.end(); ++it) {
+            if (it->first() == key) {
+                // Ya existe - asignar nuevo valor
+                it->second() = Value(std::forward<Args>(args)...);
+                return it->second();
+            }
+        }
+
+        // No existe - crear nuevo con perfect forwarding
+        bucket_list.push_back(Pair<Key, Value>(std::move(key), Value(std::forward<Args>(args)...)));
+        _size++;
+        return bucket_list.back().second();
     }
 
     Value& find(const Key& key) {

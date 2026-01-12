@@ -1,8 +1,6 @@
 #pragma once
 #include <memory>
 #include <cstdint>
-#include <initializer_list>
-#include <stdexcept>
 
 #include <string>
 #include <random>
@@ -85,6 +83,7 @@ public:
     // Acceso y retorno
     const EstadoBioma& getEstadoActual() const { return _estadoActual; }
     const ParametrosBioma& getParametrosActual() const { return _parametrosActual; }
+    
     int getId() const { return _id; }
     const std::string& getNombre() const { return _nombre; }
     Color getColor() const { return _color; }

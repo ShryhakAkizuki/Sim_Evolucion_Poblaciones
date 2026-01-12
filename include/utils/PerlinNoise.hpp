@@ -65,6 +65,32 @@ public:
         }
         p = std::move(p2);
     }
+
+    PerlinNoise() {
+        // Inicializar con 256 valores
+        p = DynamicArray<int>(256);
+        
+        // Llenar con 0-255
+        for (int i = 0; i < 256; ++i) {
+            p[i] = i;
+        }
+        
+        // Barajar usando la semilla
+        std::mt19937_64 rng(12345);
+        for (int i = 255; i > 0; --i) {
+            int j = rng() % (i + 1);
+            int temp = p[i];
+            p[i] = p[j];
+            p[j] = temp;
+        }
+        
+        // Duplicar para evitar overflow
+        DynamicArray<int> p2(512);
+        for (int i = 0; i < 512; ++i) {
+            p2[i] = p[i % 256];
+        }
+        p = std::move(p2);
+    }
     
     // Ruido básico mejorado
     double noise(double x, double y, double z = 0.0) {

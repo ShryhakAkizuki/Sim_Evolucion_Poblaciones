@@ -1,8 +1,6 @@
 #pragma once
 #include <memory>
 #include <cstdint>
-#include <initializer_list>
-#include <stdexcept>
 #include <string>
 
 #include "data_structures/DynamicArray.hpp"
@@ -10,7 +8,7 @@
 
 class BiomeSystem {
 private:
-    DynamicArray<std::shared_ptr<Bioma>> _biomas;  
+    DynamicArray<std::unique_ptr<Bioma>> _biomas;  
     uint64_t _worldSeed = 0;
 
 public:
@@ -28,13 +26,10 @@ public:
     BiomeSystem& operator=(BiomeSystem&& other) noexcept;
 
     // ----- Métodos -----
-    void registrarBioma(std::shared_ptr<Bioma> bioma);
+    void registrarBioma(std::unique_ptr<Bioma>&& bioma);
 
-    std::shared_ptr<Bioma> getBioma(int id);
-    std::shared_ptr<const Bioma> getBioma(int id) const;
-
-    std::shared_ptr<Bioma> buscarPorNombre(const std::string& nombre);
-    std::shared_ptr<const Bioma> buscarPorNombre(const std::string& nombre) const;
+    const Bioma* getBioma(int id) const;        
+    const Bioma* buscarPorNombre(const std::string& nombre) const;
 
     void actualizarTodosBiomas(float horaDelDia);
     
@@ -42,12 +37,9 @@ public:
     bool estaVacio() const { return _biomas.empty(); }
     uint32_t getWorldSeed() const { return _worldSeed; }
 
-    const DynamicArray<std::shared_ptr<Bioma>>& getTodosBiomas() const { return _biomas; }
+    const DynamicArray<std::unique_ptr<Bioma>>& getTodosBiomas() const { return _biomas; }    
+    DynamicArray<int> getTodosBiomasID() const;
 
     void limpiar();
     bool contieneBioma(int id) const;
-
-private:
-    // ----- Métodos -----
-    void copiarDesde(const BiomeSystem& other);
 };

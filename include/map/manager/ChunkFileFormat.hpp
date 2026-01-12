@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "map/Chunk.hpp"
+#include "map/manager/Chunk.hpp"
 
 #pragma pack(push, 1)  // Ensure no padding
 struct ChunkFileHeader {
@@ -11,5 +11,6 @@ struct ChunkFileHeader {
     uint32_t chunkSize;                     // Tamaño del chunk (16)
     State  state;                           // Estado anterior del chunk
     uint32_t tileDataSize;                  // Tamaño de datos de tiles
+    uint64_t seed;                          // Seed del mundo con el que fue generado el chunk
 };
 #pragma pack(pop)
