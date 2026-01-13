@@ -10,13 +10,13 @@ struct GraphicsConfig {
     bool resizable = true;
     
     // Renderizado
-    int tileSize = 32;
+    int tileSize = 5;
     int maxChunksPerFrame = 64;
     
     // Cámara
     float cameraMoveSpeed = 1000.0f;
     float cameraZoomSpeed = 0.1f;
-    float minZoom = 0.1f;
+    float minZoom = 0.5f;
     float maxZoom = 10.0f;
     
     // Visuales

@@ -17,19 +17,10 @@ struct ParametrosBioma {
     float reduccion = 0.0f;
 };
 
-struct Color {
-    uint8_t r = 0, g = 0, b = 0;
-    
-    Color() = default;
-    Color(uint8_t red, uint8_t green, uint8_t blue) : r(red), g(green), b(blue) {}
-};
-
-
 class Bioma {
 private:
     int _id = -1;
     std::string _nombre = "Desconocido";
-    Color _color = {0,0,0};
 
     // Propiedades base para generación
     float _temperaturaMedia = 20.0f;
@@ -58,14 +49,13 @@ public:
     // ----- Constructores -----
     Bioma() = default;
 
-    Bioma(int id, std::string nombre, Color color = {0, 0, 0},
+    Bioma(int id, std::string nombre,
           float tempMedia = 20.0f, float humMedia = 50.0f, float radMedia = 50.0f, 
           float movMedia = 1.0f, float expanMedia = 0.0f, float reducMedia = 0.0f,
           float tempStd = 5.0f, float humStd = 10.0f, float radStd = 15.0f,
           float movStd = 0.2f, float expanStd = 0.05f, float reducStd = 0.05f,
           uint64_t seed = 0);
 
-    Bioma(int id, std::string nombre) : Bioma(id, std::move(nombre), {0, 0, 0}) {}
     Bioma(const Bioma& other);
     Bioma(Bioma&& other) noexcept;
 
@@ -86,7 +76,6 @@ public:
     
     int getId() const { return _id; }
     const std::string& getNombre() const { return _nombre; }
-    Color getColor() const { return _color; }
 
 private:
     // ----- Métodos -----

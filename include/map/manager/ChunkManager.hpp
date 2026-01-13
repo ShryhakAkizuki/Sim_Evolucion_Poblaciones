@@ -47,20 +47,19 @@ public:
     // Conversiones
     ChunkCoord WorldToChunkPos(int worldX, int worldY) const;
     
-    // Acceso y retorno - coord
-    void SetChunk(ChunkCoord coord, std::unique_ptr<Chunk>&& chunk);
-    Chunk* GetChunk(ChunkCoord coord);
-    const Chunk* GetChunk(ChunkCoord coord) const;
+    // Acceso y retorno
+    Chunk* SetChunk(ChunkCoord coord, std::unique_ptr<Chunk>&& chunk);
+    Chunk* SetChunk(int worldX, int worldY, std::unique_ptr<Chunk>&& chunk);
+    const Chunk* Read_SetChunk(ChunkCoord coord, std::unique_ptr<Chunk>&& chunk);
+    const Chunk* Read_SetChunk(int worldX, int worldY, std::unique_ptr<Chunk>&& chunk);
 
-    // Acceso y retorno - world x,y
-    void SetChunk(int worldX, int worldY, std::unique_ptr<Chunk>&& chunk);
-    
+    Chunk* GetChunk(ChunkCoord coord);
     Chunk* GetChunk(int worldX, int worldY);
+    const Chunk* GetChunk(ChunkCoord coord) const;
     const Chunk* GetChunk(int worldX, int worldY) const;
 
     Tile& GetTile(int worldX, int worldY, Chunk* chunk);
     Tile& GetTile(int worldX, int worldY);
-
     const Tile& GetTile(int worldX, int worldY, const Chunk* chunk) const;
     const Tile& GetTile(int worldX, int worldY) const;
 

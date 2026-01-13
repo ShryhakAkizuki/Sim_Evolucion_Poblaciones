@@ -150,6 +150,9 @@ public:
     ChunkCoord getChunkCoord() const {return ChunkCoord(_chunkX,_chunkY); }
     uint32_t getChunkSize() const { return _chunk_size; }
 
+    const DynamicArray<DynamicArray<Tile>>& getAllTiles() const { return _tiles; }
+    const DynamicArray<DynamicArray<Tile>>* getAllTiles_ptr() const { return &_tiles; }
+
     // Vecindad
     void Set_North(Chunk* neighbor) { _North = neighbor; }
     void Set_South(Chunk* neighbor) { _South = neighbor; }

@@ -6,7 +6,7 @@
 // ----- Constructores -----
 
 // Constructor principal
-Bioma::Bioma(int id, std::string nombre, Color color,
+Bioma::Bioma(int id, std::string nombre,
              float tempMedia, float humMedia, float radMedia, 
              float movMedia, float expanMedia, float reducMedia,
              float tempStd, float humStd, float radStd,
@@ -14,7 +14,6 @@ Bioma::Bioma(int id, std::string nombre, Color color,
              uint64_t seed)
     : _id(id)
     , _nombre(std::move(nombre))
-    , _color(color)
     , _temperaturaMedia(tempMedia)
     , _humedadMedia(humMedia)
     , _radiacionSolarMedia(radMedia)
@@ -37,7 +36,6 @@ Bioma::Bioma(int id, std::string nombre, Color color,
 Bioma::Bioma(const Bioma& other)
     : _id(other._id)
     , _nombre(other._nombre)
-    , _color(other._color)
     , _temperaturaMedia(other._temperaturaMedia)
     , _humedadMedia(other._humedadMedia)
     , _radiacionSolarMedia(other._radiacionSolarMedia)
@@ -63,7 +61,6 @@ Bioma::Bioma(const Bioma& other)
 Bioma::Bioma(Bioma&& other) noexcept
     : _id(std::exchange(other._id, -1))
     , _nombre(std::move(other._nombre))
-    , _color(std::exchange(other._color, {0, 0, 0}))
     , _temperaturaMedia(std::exchange(other._temperaturaMedia, 20.0f))
     , _humedadMedia(std::exchange(other._humedadMedia, 50.0f))
     , _radiacionSolarMedia(std::exchange(other._radiacionSolarMedia, 50.0f))
@@ -89,7 +86,6 @@ Bioma& Bioma::operator=(const Bioma& other) {
     if (this != &other) {
         _id = other._id;
         _nombre = other._nombre;
-        _color = other._color;
         _temperaturaMedia = other._temperaturaMedia;
         _humedadMedia = other._humedadMedia;
         _radiacionSolarMedia = other._radiacionSolarMedia;
@@ -116,7 +112,6 @@ Bioma& Bioma::operator=(Bioma&& other) noexcept {
     if (this != &other) {
         _id = std::exchange(other._id, -1);
         _nombre = std::move(other._nombre);
-        _color = std::exchange(other._color, {0, 0, 0});
         _temperaturaMedia = std::exchange(other._temperaturaMedia, 20.0f);
         _humedadMedia = std::exchange(other._humedadMedia, 50.0f);
         _radiacionSolarMedia = std::exchange(other._radiacionSolarMedia, 50.0f);

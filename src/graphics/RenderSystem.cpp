@@ -3,8 +3,8 @@
 #include "graphics/RenderSystem.hpp"
 
 // ----- Constructores -----
-RenderSystem::RenderSystem(const GraphicsConfig& config,  int chunksize) 
-    : _config(config), _chunksize(chunksize) {}
+RenderSystem::RenderSystem(const GraphicsConfig& config, const DynamicArray<glm::vec4>& BiomeColors, int chunksize) 
+    : _config(config), _BiomeColors(BiomeColors), _chunksize(chunksize)  {}
 
 // ----- Destructor -----
 RenderSystem::~RenderSystem() {
@@ -76,7 +76,7 @@ bool RenderSystem::init() {
     // Subsistemas
     std::cout << "[RenderSystem] Configurando cámara...\n";
     _camera.setViewportSize(_config.windowWidth, _config.windowHeight);
-
+    _camera.setZoomBound(_config.minZoom, _config.maxZoom);
     std::cout << "[RenderSystem] Configurando InputManager...\n";
     _inputManager = InputManager(_window);
     
@@ -143,12 +143,47 @@ void RenderSystem::processInput(float deltaTime) {
 }
 
 // Métodos de chunks
-void RenderSystem::updateChunk(const ChunkCoord& coord, const glm::vec4* colors) {
-    _tileRenderer.updateChunk(coord, colors);
+void RenderSystem::updateChunk(const ChunkCoord& coord, const DynamicArray<DynamicArray<Tile>>& Chunk) {
+    _tileRenderer.updateChunk(coord, TiletoColor(Chunk).data());
 }
 
 void RenderSystem::removeChunk(const ChunkCoord& coord) {
     _tileRenderer.removeChunk(coord);
+}
+
+// Carga y descarga masiva
+void RenderSystem::updateChunk(const DynamicArray<ChunkCoord> &Coord_Array, DynamicArray<const DynamicArray<DynamicArray<Tile>>*> Chunk_list) {
+    if(Coord_Array.size() != Chunk_list.size()) return;
+
+    for(int i = 0; i < Chunk_list.size(); ++i){
+        if(Chunk_list[i]!= nullptr){
+            updateChunk(Coord_Array[i],*(Chunk_list[i]));
+        }
+    }
+}
+
+void RenderSystem::removeChunk(const DynamicArray<ChunkCoord> &Coord_Array) {
+    for(int i = 0; i < Coord_Array.size(); ++i){
+        _tileRenderer.removeChunk(Coord_Array[i]);
+    }
+}
+
+// Conversion
+DynamicArray<glm::vec4> RenderSystem::TiletoColor(const DynamicArray<DynamicArray<Tile>>& Chunk) {
+    DynamicArray<glm::vec4> TileColors(Chunk.size()*Chunk.size());
+
+    for (uint32_t y = 0; y < Chunk.size(); ++y) {
+        for (uint32_t x = 0; x < Chunk[y].size(); ++x) {
+            const Tile& tile = Chunk[y][x];
+            glm::vec4 color;
+
+            if(tile.hasWater()) color = glm::vec4(0.0f, 0.3f, 0.8f, 0.7f);
+            else color = _BiomeColors[tile.getBiomeId()];
+
+            TileColors[y * Chunk[y].size() + x] = color;
+        }
+    }
+    return TileColors;
 }
 
 // Callbacks -> InputManager y Camara

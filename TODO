@@ -1,4 +1,7 @@
--> Mejoras al WorldGEnerator
+-> Mejoras al WorldGEnerator: - Algoritmo Cuasi-infinito (Maximo hasta los limites de 32-bits) para generar 32-bit size Chunks aleatorios? 
 
 
+                                        - Activity Centers: * Load: Array < Par <const Tile&, coord> >
+                                                            * Unload: Array < coord >
 
+-> Arreglar Input de la tecla ESCAPE

@@ -5,8 +5,8 @@ Camera::Camera() : _viewportSize(0.0f, 0.0f) {
     updateMatrices();
 }
 
-Camera::Camera(int viewportWidth, int viewportHeight)    
-: _viewportSize(viewportWidth, viewportHeight) {
+Camera::Camera(int viewportWidth, int viewportHeight, float minzoom, float maxzoom)   
+: _viewportSize(viewportWidth, viewportHeight), _minzoom(minzoom), _maxzoom(maxzoom) {
     updateMatrices();
 }
 
@@ -14,6 +14,8 @@ Camera::Camera(Camera&& other) noexcept
 : _position(std::move(other._position)),
   _zoom(std::move(other._zoom)),
   _viewportSize(std::move(other._viewportSize)),
+  _minzoom(std::move(other._minzoom)),
+  _maxzoom(std::move(other._maxzoom)),
   _viewMatrix(std::move(other._viewMatrix)),
   _projectionMatrix(std::move(other._projectionMatrix)),
   _viewProjectionMatrix(std::move(other._viewProjectionMatrix)),
@@ -26,6 +28,8 @@ Camera& Camera::operator=(Camera&& other) noexcept {
         _position = std::move(other._position);
         _zoom = std::move(other._zoom);
         _viewportSize = std::move(other._viewportSize);
+        _minzoom = std::move(other._minzoom);
+        _maxzoom = std::move(other._maxzoom);
         _viewMatrix = std::move(other._viewMatrix);
         _projectionMatrix = std::move(other._projectionMatrix);
         _viewProjectionMatrix = std::move(other._viewProjectionMatrix);
@@ -53,9 +57,19 @@ void Camera::setZoom(float zoom) {
     _dirty = true;
 }
 
+void Camera::setZoomBound(float minzoom, float maxzoom){
+    _minzoom = minzoom;
+    _maxzoom = maxzoom;
+}
+
+
 void Camera::zoom(float factor) {
     _zoom *= factor;
     _dirty = true;
+
+    if(_zoom>_maxzoom)_zoom = _maxzoom;
+    if(_zoom<_minzoom)_zoom = _minzoom;
+
 }
 
 void Camera::setViewportSize(int width, int height) {

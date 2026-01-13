@@ -32,28 +32,28 @@ int main(){
     BiomeSystem Biome_Engine(worldSeed);
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        0, "Llanura", Color{124, 252, 0},
+        0, "Llanura",
         22.0f, 45.0f, 70.0f, 1.0f, 0.2f, 0.2f,
         6.0f, 15.0f, 12.0f, 0.15f, 0.08f, 0.07f,
         static_cast<uint32_t>(worldSeed)
     ));
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        1, "Bosque", Color{34, 139, 34},
+        1, "Bosque",
         18.0f, 65.0f, 50.0f, 1.3f, 0.15f, 0.1f,
         4.0f, 12.0f, 10.0f, 0.25f, 0.06f, 0.04f,
         static_cast<uint32_t>(worldSeed)
     ));
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        2, "Colinas", Color{139, 115, 85},
+        2, "Colinas",
         16.0f, 55.0f, 65.0f, 1.4f, 0.1f, 0.15f,
         5.0f, 10.0f, 8.0f, 0.3f, 0.05f, 0.06f,
         static_cast<uint32_t>(worldSeed)
     ));
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        3, "Pantano", Color{48, 128, 20},
+        3, "Pantano",
         20.0f, 85.0f, 45.0f, 1.6f, 0.25f, 0.05f,
         3.0f, 8.0f, 6.0f, 0.4f, 0.12f, 0.02f,
         static_cast<uint32_t>(worldSeed)
@@ -61,42 +61,42 @@ int main(){
 
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        4, "Desierto", Color{255, 230, 150},
+        4, "Desierto",
         35.0f, 15.0f, 85.0f, 1.5f, 0.05f, 0.3f,
         8.0f, 5.0f, 10.0f, 0.25f, 0.03f, 0.12f,
         static_cast<uint32_t>(worldSeed)
     ));
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        5, "Sabana", Color{210, 180, 140},
+        5, "Sabana",
         28.0f, 35.0f, 75.0f, 1.2f, 0.12f, 0.18f,
         7.0f, 10.0f, 9.0f, 0.2f, 0.07f, 0.08f,
         static_cast<uint32_t>(worldSeed)
     ));
     
     Biome_Engine.registrarBioma(std::make_unique<Bioma>(
-        6, "Tundra", Color{200, 220, 240},
+        6, "Tundra",
         5.0f, 60.0f, 40.0f, 1.3f, 0.08f, 0.12f,
         4.0f, 12.0f, 7.0f, 0.25f, 0.04f, 0.05f,
         static_cast<uint32_t>(worldSeed)
     ));
 
-    // Tabla de conversión de biome ID a color
-    const int numBiomes = Biome_Engine.getCantidadBiomas();
-    DynamicArray<glm::vec4> biomeColors(numBiomes);
-    
-    for (int i = 0; i < numBiomes; ++i) {
-        const Bioma* biome = Biome_Engine.getBioma(i);
-        if (biome) {
-            Color c = biome->getColor();
-            biomeColors[i] = glm::vec4(
-                c.r / 255.0f,
-                c.g / 255.0f,
-                c.b / 255.0f,
-                1.0f
-            );
-        }
-    }
+    DynamicArray<glm::vec4> biomeColors = {
+        // Llanura
+        glm::vec4(124.0f/255.0f, 252.0f/255.0f, 0.0f/255.0f, 1.0f),
+        // Bosque
+        glm::vec4(34.0f/255.0f, 139.0f/255.0f, 34.0f/255.0f, 1.0f),
+        // Colinas
+        glm::vec4(139.0f/255.0f, 115.0f/255.0f, 85.0f/255.0f, 1.0f),
+        // Pantano
+        glm::vec4(48.0f/255.0f, 128.0f/255.0f, 20.0f/255.0f, 1.0f),
+        // Desierto
+        glm::vec4(255.0f/255.0f, 230.0f/255.0f, 150.0f/255.0f, 1.0f),
+        // Sabana
+        glm::vec4(210.0f/255.0f, 180.0f/255.0f, 140.0f/255.0f, 1.0f),
+        // Tundra
+        glm::vec4(200.0f/255.0f, 220.0f/255.0f, 240.0f/255.0f, 1.0f),
+    };
 
     // -------------------------- Motor de mapas --------------------------
     std::cout << "Inicializando generador de mundo...\n";   
@@ -109,12 +109,12 @@ int main(){
     config.windowWidth = 1600;
     config.windowHeight = 900;
     config.windowTitle = "World map";
-    config.vsync = false;
-    config.tileSize = 32;
+    config.vsync = true;
+    config.tileSize = 2;
     
     // Sistema de renderizado
     std::cout << "Inicializando renderizador...\n";
-    RenderSystem Graphics_Engine(config, Map_Engine.GetChunkSize());
+    RenderSystem Graphics_Engine(config, biomeColors, Map_Engine.GetChunkSize());
     if (!Graphics_Engine.init()) {
         std::cerr << "Error: No se pudo inicializar el sistema gráfico\n";
         return -1;
@@ -132,43 +132,48 @@ int main(){
     std::cout << "  ESC - Salir\n";
 
     // ------------------------ Debug ------------------------
-    float timeSinceLastLoad = 0.0f;
-    int currentRadius = 0;
+    float timeSinceLastLoad = 60.0f;
     const int maxRadius = 15; // Radio máximo de chunks a cargar
     bool loadingMode = true; // true = cargando, false = descargando
-    
-    auto processChunk = [&](const ChunkCoord& coord, bool load) {
-            if (load) {
-                DynamicArray<glm::vec4> chnk_colors(Map_Engine.GetChunkSize() * Map_Engine.GetChunkSize());
+    DynamicArray<ChunkCoord> Debug_Coords;
 
-                // Cargar chunk
-                Map_Engine.LoadChunk(coord);
-                const Chunk* chnk = Map_Engine.GetChunk(coord);
-                
-                if (chnk) {
-                    // Generar colores
-                    for (uint32_t y = 0; y < Map_Engine.GetChunkSize(); ++y) {
-                        for (uint32_t x = 0; x < Map_Engine.GetChunkSize(); ++x) {
-                            const Tile& tile = (*chnk)[y][x];
-                            
-                            int biomeId = tile.getBiomeId();
-                            glm::vec4 color = biomeColors[biomeId];
+    for(int currentRadius = 0; currentRadius<=maxRadius; ++currentRadius){
+        if (currentRadius == 0) {
+            Debug_Coords.push_back(ChunkCoord(0, 0));
 
-                            if(tile.hasWater()) color = glm::vec4(0.0f, 0.3f, 0.8f, 0.7f);
+        } else {
 
-                            chnk_colors[y * Map_Engine.GetChunkSize() + x] = color;
-                        }
-                    }
-                    // Actualizar gráficos
-                    Graphics_Engine.updateChunk(coord, chnk_colors.data());
-                }
-            } else {
-                // Descargar chunk
-                Graphics_Engine.removeChunk(coord);
-                Map_Engine.UnloadChunk(coord);
+            for (int x = -currentRadius; x <= currentRadius; ++x) {
+                Debug_Coords.push_back(ChunkCoord(x, -currentRadius));
+                Debug_Coords.push_back(ChunkCoord(x, currentRadius));
             }
+            
+            // Lados izquierdo y derecho (sin incluir las esquinas ya procesadas)
+            for (int y = -currentRadius + 1; y <= currentRadius - 1; ++y) {
+                Debug_Coords.push_back(ChunkCoord(-currentRadius, y));
+                Debug_Coords.push_back(ChunkCoord(currentRadius, y));
+
+            }
+        }
+    }    
+
+    auto processChunk = [&](const ChunkCoord& coord, bool load) {
+        if (load) Graphics_Engine.updateChunk(coord, Map_Engine.LoadChunk(coord));
+        else {
+            // Descargar chunk
+            Graphics_Engine.removeChunk(coord);
+            Map_Engine.UnloadChunk(coord);
+        }
     };
-    
+
+    auto processChunk_Stream = [&](const DynamicArray<ChunkCoord>& coords, bool load) {
+        if (load) Graphics_Engine.updateChunk(coords, Map_Engine.loadAllChunksInVector(coords));
+        else {
+            // Descargar chunk
+            Graphics_Engine.removeChunk(coords);
+            Map_Engine.UnloadAllChunksInVector(coords);
+        }
+    };
     // -------------------------------------------------------
     // Game loop principal
     while (!Graphics_Engine.shouldClose()) {
@@ -191,43 +196,14 @@ int main(){
         Graphics_Engine.processInput(deltaTime);
 
         // ------------------------ Logica del mundo -------------------------------
-
         timeSinceLastLoad += deltaTime;
 
-        if (timeSinceLastLoad >= 2.0f) {
-            
-            if (currentRadius == 0) {
-                // Chunk central
-                processChunk(ChunkCoord(0, 0), loadingMode);
-            } else {
-                // Procesar los 4 lados del cuadrado/anillo
-                
-                // Lados superior e inferior
-                for (int x = -currentRadius; x <= currentRadius; ++x) {
-                    processChunk(ChunkCoord(x, -currentRadius), loadingMode);
-                    processChunk(ChunkCoord(x, currentRadius), loadingMode);
-                }
-                
-                // Lados izquierdo y derecho (sin incluir las esquinas ya procesadas)
-                for (int y = -currentRadius + 1; y <= currentRadius - 1; ++y) {
-                    processChunk(ChunkCoord(-currentRadius, y), loadingMode);
-                    processChunk(ChunkCoord(currentRadius, y), loadingMode);
-                }
-            }
+        if (timeSinceLastLoad >= 60.0f){
+            processChunk_Stream(Debug_Coords,loadingMode);
 
-            if(loadingMode) {
-                ++currentRadius;
-                if(currentRadius>maxRadius) loadingMode = !loadingMode;
-            
-            } else {
-                --currentRadius;
-                if(currentRadius<0) loadingMode = !loadingMode;
-            }
-
-
-            timeSinceLastLoad = 0.0f;
+            loadingMode = !loadingMode;        
+            timeSinceLastLoad = 0;
         }
-
         // -------------------------------------------------------------------------
 
         // Renderizar el Frame

@@ -58,20 +58,17 @@ public:
     void UnloadChunk(const ChunkCoord& coord);
     void UnloadChunk(int WorldX, int WorldY);
 
-    void LoadChunk(ChunkCoord Coord);
-    void LoadChunk(int WorldX, int WorldY);
+    const DynamicArray<DynamicArray<Tile>>& LoadChunk(ChunkCoord Coord);
+    const DynamicArray<DynamicArray<Tile>>& LoadChunk(int WorldX, int WorldY);
+
+    const DynamicArray<DynamicArray<Tile>>* LoadChunk_ptr(ChunkCoord Coord);
+    const DynamicArray<DynamicArray<Tile>>* LoadChunk_ptr(int WorldX, int WorldY);
 
     const uint32_t& GetChunkSize() const;
 
     // ------ Carga y descarga masiva ------
-    void loadAllChunksInSquare(int WorldX_1, int WorldY_1, int WorldX_2, int WorldY_2);
-    void UnloadAllChunksInSquare(int WorldX_1, int WorldY_1, int WorldX_2, int WorldY_2);
-
-    void loadAllChunksInCircle(int WorldX, int WorldY, int Radius);
-    void UnloadAllChunksInCircle(int WorldX, int WorldY, int Radius);
-
-    void loadAllChunksInVector(DynamicArray<ChunkCoord> Chunk_Array);
-    void UnloadAllChunksInVector(DynamicArray<ChunkCoord> Chunk_Array);
+    DynamicArray<const DynamicArray<DynamicArray<Tile>>*> loadAllChunksInVector(const DynamicArray<ChunkCoord>& Chunk_Array);
+    void UnloadAllChunksInVector(const DynamicArray<ChunkCoord>&Chunk_Array);
 
     // ------ Gestion de Chunks y estados ------
     void DynamicChunkStates();

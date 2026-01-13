@@ -7,9 +7,12 @@ class Camera {
 private:
     // ----- Atributos -----
     glm::vec2 _position = {0.0f, 0.0f};
-    float _zoom = 0.05f;
+    float _zoom = 1.0f;
     glm::vec2 _viewportSize;
     
+    float _minzoom = 0.05f;
+    float _maxzoom = 10.0f;
+
     glm::mat4 _viewMatrix;
     glm::mat4 _projectionMatrix;
     glm::mat4 _viewProjectionMatrix;
@@ -18,7 +21,7 @@ private:
 public:
     // ----- Constructores -----
     Camera();
-    Camera(int viewportWidth, int viewportHeight);
+    Camera(int viewportWidth, int viewportHeight, float minzoom, float maxzoom);
 
     Camera(const Camera& other) = delete;
     Camera(Camera&& other) noexcept;
@@ -41,6 +44,7 @@ public:
     void setPosition(float x, float y);
     void move(float dx, float dy);
     void setZoom(float zoom);
+    void setZoomBound(float minzoom, float maxzoom);
     void zoom(float factor);
     void setViewportSize(int width, int height);
     

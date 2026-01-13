@@ -5,11 +5,9 @@
 
 // ----- Constructores -----
 
-// Constructor principal
 BiomeSystem::BiomeSystem(uint64_t worldSeed) 
 : _worldSeed(worldSeed) {}
 
-// Constructor de copia
 BiomeSystem::BiomeSystem(const BiomeSystem& other) 
 : _worldSeed(other._worldSeed) {
 
@@ -24,14 +22,12 @@ BiomeSystem::BiomeSystem(const BiomeSystem& other)
     _biomas = std::move(new_biomas);
 }
 
-// Constructor de movimiento
 BiomeSystem::BiomeSystem(BiomeSystem&& other) noexcept
     : _biomas(std::move(other._biomas))
     , _worldSeed(std::exchange(other._worldSeed, 0)) {}
 
 // ----- Operadores -----
 
-// Operador de asignación por copia
 BiomeSystem& BiomeSystem::operator=(const BiomeSystem& other) {
     if (this != &other) {
         _worldSeed = other._worldSeed;
@@ -50,7 +46,6 @@ BiomeSystem& BiomeSystem::operator=(const BiomeSystem& other) {
     return *this;
 }
 
-// Operador de asignación por movimiento
 BiomeSystem& BiomeSystem::operator=(BiomeSystem&& other) noexcept {
     if (this != &other) {
         _biomas = std::move(other._biomas);

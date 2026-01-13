@@ -60,11 +60,29 @@ ChunkCoord ChunkManager::WorldToChunkPos(int worldX, int worldY) const {
     return {ChunkX, ChunkY};
 }
 
-// Acceso y retorno - coord
-void ChunkManager::SetChunk(ChunkCoord coord, std::unique_ptr<Chunk>&& chunk){   
-    Chunk* raw = chunk.get();
-    _chunks.emplace(coord,std::move(chunk));
+// Acceso y retorno
+Chunk* ChunkManager::SetChunk(ChunkCoord coord, std::unique_ptr<Chunk>&& chunk){   
+    Chunk* raw = _chunks.emplace(coord,std::move(chunk)).get();
     LinkChunkNeighbors(raw);
+
+    return raw;
+}
+
+Chunk* ChunkManager::SetChunk(int worldX, int worldY, std::unique_ptr<Chunk>&& chunk){  
+    ChunkCoord chunkPos = WorldToChunkPos(worldX, worldY);
+    return SetChunk(chunkPos, std::move(chunk));
+}
+
+const Chunk* ChunkManager::Read_SetChunk(ChunkCoord coord, std::unique_ptr<Chunk>&& chunk){   
+    Chunk* raw = _chunks.emplace(coord,std::move(chunk)).get();
+    LinkChunkNeighbors(raw);
+
+    return raw;
+}
+
+const Chunk* ChunkManager::Read_SetChunk(int worldX, int worldY, std::unique_ptr<Chunk>&& chunk){  
+    ChunkCoord chunkPos = WorldToChunkPos(worldX, worldY);
+    return SetChunk(chunkPos, std::move(chunk));
 }
 
 Chunk* ChunkManager::GetChunk(ChunkCoord coord) {
@@ -73,29 +91,21 @@ Chunk* ChunkManager::GetChunk(ChunkCoord coord) {
         
     std::unique_ptr<Chunk> disk_chunk = LoadChunkFromDisk(coord);
     if (disk_chunk != nullptr) {
-        Chunk* raw = disk_chunk.get();
-        SetChunk(coord, std::move(disk_chunk));
-        return raw;
+        return SetChunk(coord, std::move(disk_chunk));
     }
 
     return nullptr;
+}
+
+Chunk* ChunkManager::GetChunk(int worldX, int worldY) {
+    ChunkCoord chunkPos = WorldToChunkPos(worldX, worldY);
+    return GetChunk(chunkPos);
 }
 
 const Chunk* ChunkManager::GetChunk(ChunkCoord coord) const{
     const std::unique_ptr<Chunk>* found_chunk = _chunks.find_ptr(coord);
     if (found_chunk != nullptr) return found_chunk->get();
     else return nullptr;
-}
-
-// Acceso y retorno - world x,y
-void ChunkManager::SetChunk(int worldX, int worldY, std::unique_ptr<Chunk>&& chunk){  
-    ChunkCoord chunkPos = WorldToChunkPos(worldX, worldY);
-    SetChunk(chunkPos, std::move(chunk));
-}
-
-Chunk* ChunkManager::GetChunk(int worldX, int worldY) {
-    ChunkCoord chunkPos = WorldToChunkPos(worldX, worldY);
-    return GetChunk(chunkPos);
 }
 
 const Chunk* ChunkManager::GetChunk(int worldX, int worldY) const{

@@ -107,19 +107,38 @@ void WorldSystem::UnloadChunk(int WorldX, int WorldY){
   UnloadChunk(coord);
 }
 
-void WorldSystem::LoadChunk(ChunkCoord coord){
-  Chunk* Access_Chunk = _Manager.GetChunk(coord);
+const DynamicArray<DynamicArray<Tile>>& WorldSystem::LoadChunk(ChunkCoord coord){
+  const Chunk* Access_Chunk = _Manager.GetChunk(coord);
   
   if (Access_Chunk == nullptr){
     std::unique_ptr<Chunk> New_Chunk = _Generator.generateChunk(coord, _Manager.getChunkSize());    
     New_Chunk->setState(State::LOADED);
-    _Manager.SetChunk(coord, std::move(New_Chunk));
+    Access_Chunk = _Manager.Read_SetChunk(coord, std::move(New_Chunk));
   }
+
+  return Access_Chunk->getAllTiles();
 }
 
-void WorldSystem::LoadChunk(int WorldX, int WorldY){
+const DynamicArray<DynamicArray<Tile>>& WorldSystem::LoadChunk(int WorldX, int WorldY){
   ChunkCoord coord = _Manager.WorldToChunkPos(WorldX,WorldY);
-  LoadChunk(coord);
+  return LoadChunk(coord);
+}
+
+const DynamicArray<DynamicArray<Tile>>* WorldSystem::LoadChunk_ptr(ChunkCoord coord){
+  const Chunk* Access_Chunk = _Manager.GetChunk(coord);
+  
+  if (Access_Chunk == nullptr){
+    std::unique_ptr<Chunk> New_Chunk = _Generator.generateChunk(coord, _Manager.getChunkSize());    
+    New_Chunk->setState(State::LOADED);
+    Access_Chunk = _Manager.Read_SetChunk(coord, std::move(New_Chunk));
+  }
+
+  return Access_Chunk->getAllTiles_ptr();
+}
+
+const DynamicArray<DynamicArray<Tile>>* WorldSystem::LoadChunk_ptr(int WorldX, int WorldY){
+  ChunkCoord coord = _Manager.WorldToChunkPos(WorldX,WorldY);
+  return LoadChunk_ptr(coord);
 }
 
 const uint32_t& WorldSystem::GetChunkSize() const{
@@ -127,67 +146,18 @@ const uint32_t& WorldSystem::GetChunkSize() const{
 }
 
 // ------ Carga y descarga masiva ------
-void WorldSystem::loadAllChunksInSquare(int WorldX_1, int WorldY_1, int WorldX_2, int WorldY_2){
-  if(WorldX_2 < WorldX_1 || WorldY_2 < WorldY_1){
-    throw std::out_of_range("Cuadrado invalido, WorldX_2 > WorldX_1 y WorldY_2 > WorldY_1");
-  }
+DynamicArray<const DynamicArray<DynamicArray<Tile>>*> WorldSystem::loadAllChunksInVector(const DynamicArray<ChunkCoord>& Chunk_Array){
+  DynamicArray<const DynamicArray<DynamicArray<Tile>>*> TileList;
 
-  for(int i = WorldX_1; i<=WorldX_2; ++i){
-    for(int j = WorldY_1; j<=WorldY_2; ++j){
-      LoadChunk(i,j);
-    }
+  for(int i = 0; i<Chunk_Array.size(); ++i){
+    TileList.push_back(LoadChunk_ptr(Chunk_Array[i]));
   }
+  return TileList;
 }
 
-void WorldSystem::UnloadAllChunksInSquare(int WorldX_1, int WorldY_1, int WorldX_2, int WorldY_2){
-  if(WorldX_2 < WorldX_1 || WorldY_2 < WorldY_1){
-    throw std::out_of_range("Cuadrado invalido, WorldX_2 > WorldX_1 y WorldY_2 > WorldY_1");
-  }
-
-  for(int i = WorldX_1; i<=WorldX_2; ++i){
-    for(int j = WorldY_1; j<=WorldY_2; ++j){
-      UnloadChunk(i,j);
-    }
-  }
-}
-
-void WorldSystem::loadAllChunksInCircle(int WorldX, int WorldY, int Radius){
-  if(Radius<1){
-    throw std::out_of_range("Circulo invalido, Radio > 1");
-  }
-
-  for(int i = -Radius; i<=Radius; ++i){
-    for(int j = -Radius; j<=Radius; ++j){
-      if (i*i + j*j <= Radius*Radius){
-        LoadChunk(WorldX+i,WorldY+j);
-      }
-    }
-  }
-}
-
-void WorldSystem::UnloadAllChunksInCircle(int WorldX, int WorldY, int Radius){
-  if(Radius<1){
-    throw std::out_of_range("Circulo invalido, Radio > 1");
-  }
-
-  for(int i = -Radius; i<=Radius; ++i){
-    for(int j = -Radius; j<=Radius; ++j){
-      if (i*i + j*j <= Radius*Radius){
-        UnloadChunk(WorldX+i,WorldY+j);
-      }
-    }
-  }
-}
-
-void WorldSystem::loadAllChunksInVector(DynamicArray<ChunkCoord> Chunk_Array){
-  for (ChunkCoord& Chunk: Chunk_Array){
-    LoadChunk(Chunk);
-  }
-}
-
-void WorldSystem::UnloadAllChunksInVector(DynamicArray<ChunkCoord> Chunk_Array){
-  for (ChunkCoord& Chunk: Chunk_Array){
-    UnloadChunk(Chunk);
+void WorldSystem::UnloadAllChunksInVector(const DynamicArray<ChunkCoord>& Chunk_Array){
+  for(int i = 0; i<Chunk_Array.size(); ++i){
+    UnloadChunk(Chunk_Array[i]);
   }
 }
 
