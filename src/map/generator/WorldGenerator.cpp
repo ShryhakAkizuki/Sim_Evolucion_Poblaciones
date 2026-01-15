@@ -83,8 +83,6 @@ std::unique_ptr<Chunk> WorldGenerator::generateChunk(ChunkCoord coord, uint32_t 
     
     chunk->setState(State::LOADED);
     
-    cleanupOldSeeds();
-
     return chunk;
 }
 
@@ -241,8 +239,10 @@ DynamicArray<BiomeSeed> WorldGenerator::collectSeedsForChunk(const Chunk& chunk)
     float maxTileX = minTileX + static_cast<float>(chunkSize);
     float maxTileY = minTileY + static_cast<float>(chunkSize);
     
-    Pair<int, int> startCell = worldToCellCoords(minTileX - _biomeRadius, minTileY - _biomeRadius);
-    Pair<int, int> endCell = worldToCellCoords(maxTileX + _biomeRadius, maxTileY + _biomeRadius);
+    float expand = _biomeRadius * 2.0f;
+    
+    Pair<int, int> startCell = worldToCellCoords(minTileX - expand, minTileY - expand);
+    Pair<int, int> endCell = worldToCellCoords(maxTileX + expand, maxTileY + expand);
     
     for (int cellY = startCell.second(); cellY <= endCell.second(); ++cellY) {
         for (int cellX = startCell.first(); cellX <= endCell.first(); ++cellX) {
@@ -251,9 +251,9 @@ DynamicArray<BiomeSeed> WorldGenerator::collectSeedsForChunk(const Chunk& chunk)
             
             if (it != nullptr) {
                 for (const BiomeSeed& seed : *it) {
-                    // CORRECCIÓN: Comparación correcta con coordenadas que pueden ser negativas
-                    if (seed.x >= (minTileX - _biomeRadius) && seed.x <= (maxTileX + _biomeRadius) &&
-                        seed.y >= (minTileY - _biomeRadius) && seed.y <= (maxTileY + _biomeRadius)) {
+                    // Usar el mismo margen expandido
+                    if (seed.x >= (minTileX - expand) && seed.x <= (maxTileX + expand) &&
+                        seed.y >= (minTileY - expand) && seed.y <= (maxTileY + expand)) {
                         result.push_back(seed);
                     }
                 }
@@ -327,10 +327,16 @@ void WorldGenerator::updateCellSize() {
 }
 
 int64_t WorldGenerator::calculateCellIndex(int cellX, int cellY) const {
-    uint64_t ux = static_cast<uint64_t>((cellX << 1) ^ (cellX >> 31));
-    uint64_t uy = static_cast<uint64_t>((cellY << 1) ^ (cellY >> 31));
+    // Manejar coordenadas negativas correctamente
+    uint64_t ux = static_cast<uint64_t>(static_cast<int64_t>(cellX));
+    uint64_t uy = static_cast<uint64_t>(static_cast<int64_t>(cellY));
     
-    return static_cast<int64_t>((ux << 32) | uy);
+    // Codificar correctamente para mantener orden
+    uint64_t encodedX = (ux << 1) ^ (ux >> 63);
+    uint64_t encodedY = (uy << 1) ^ (uy >> 63);
+    
+    // Combinar de manera única
+    return static_cast<int64_t>((encodedX << 32) | (encodedY & 0xFFFFFFFF));
 }
 
 Pair<int, int> WorldGenerator::worldToCellCoords(float worldX, float worldY) const {
@@ -341,9 +347,12 @@ Pair<int, int> WorldGenerator::worldToCellCoords(float worldX, float worldY) con
 }
 
 std::mt19937_64 WorldGenerator::createCellRNG(int cellX, int cellY) const {
-    // Usar un método seguro para manejar negativos
-    uint64_t encodedX = static_cast<uint64_t>((cellX << 1) ^ (cellX >> 63));
-    uint64_t encodedY = static_cast<uint64_t>((cellY << 1) ^ (cellY >> 63));
+    // Usar el mismo método que calculateCellIndex pero sin convertir a int64_t final
+    uint64_t ux = static_cast<uint64_t>(static_cast<int64_t>(cellX));
+    uint64_t uy = static_cast<uint64_t>(static_cast<int64_t>(cellY));
+    
+    uint64_t encodedX = (ux << 1) ^ (ux >> 63);
+    uint64_t encodedY = (uy << 1) ^ (uy >> 63);
     
     uint64_t cellSeed = _worldSeed ^ 
                        (encodedX << 32) ^ 
@@ -351,27 +360,3 @@ std::mt19937_64 WorldGenerator::createCellRNG(int cellX, int cellY) const {
     return std::mt19937_64(cellSeed);
 }
 
-void WorldGenerator::cleanupOldSeeds() {
-    // Limpiar periódicamente (cada 100 chunks, por ejemplo)
-    static int cleanupCounter = 0;
-    cleanupCounter++;
-    
-    if (cleanupCounter > 100 && _seedGrid.size() > 1000) {
-        // Mantener solo las 500 celdas más recientes
-        if (_seedGrid.size() > 500) {
-            auto it = _seedGrid.begin();
-
-            for(int i = 0; i < 500; ++i){
-                ++it;
-                if(it == _seedGrid.end()){
-                    break;
-                }
-            }
-            
-            while(it != _seedGrid.end()){
-                it = _seedGrid.erase(it);
-            }
-        }
-        cleanupCounter = 0;
-    }
-}

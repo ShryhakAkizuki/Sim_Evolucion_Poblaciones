@@ -104,7 +104,4 @@ private:
 
     // ----- RNG -----
     std::mt19937_64 createCellRNG(int cellX, int cellY) const;
-
-    // ----- Limpieza -----
-    void cleanupOldSeeds();
 };
