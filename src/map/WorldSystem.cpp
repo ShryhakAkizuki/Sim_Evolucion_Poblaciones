@@ -1,33 +1,43 @@
 #include <stdexcept>
 #include "map/WorldSystem.hpp"
 
-WorldSystem::WorldSystem(const BiomeSystem& biomeSystem, 
+WorldSystem::WorldSystem(DynamicArray<int> BiomesID, 
                         uint64_t worldSeed, 
                         uint32_t chunkSize, 
                         int simulation_distance, 
-                        int keep_loaded_distance)
+                        int keep_loaded_distance,
+                        float biomeRadiusInMeters,
+                        float metersPerTile)
     : _Manager(chunkSize,worldSeed),
-      _Generator(biomeSystem, worldSeed),
+      _Generator(BiomesID, worldSeed, biomeRadiusInMeters, metersPerTile),
       _simulation_distance(simulation_distance),
-      _keep_loaded_distance(keep_loaded_distance) {};
+      _keep_loaded_distance(keep_loaded_distance),
+      _biomeRadiusInMeters(biomeRadiusInMeters),
+      _metersPerTile(metersPerTile){};
 
 
-WorldSystem::WorldSystem(const BiomeSystem& biomeSystem, 
+WorldSystem::WorldSystem(DynamicArray<int> BiomesID, 
                         uint64_t worldSeed, 
                         uint32_t chunkSize, 
                         LakeConfig lake_config, 
                         int simulation_distance, 
-                        int keep_loaded_distance)
+                        int keep_loaded_distance,
+                        float biomeRadiusInMeters,
+                        float metersPerTile)
     : _Manager(chunkSize, worldSeed),
-      _Generator(biomeSystem, lake_config, worldSeed),
+      _Generator(BiomesID, lake_config, worldSeed, biomeRadiusInMeters, metersPerTile),
       _simulation_distance(simulation_distance),
-      _keep_loaded_distance(keep_loaded_distance) {};
+      _keep_loaded_distance(keep_loaded_distance),
+      _biomeRadiusInMeters(biomeRadiusInMeters),
+      _metersPerTile(metersPerTile){};
 
 WorldSystem::WorldSystem(WorldSystem&& other) noexcept 
   :   _Manager(std::move(other._Manager)),
       _Generator(std::move(other._Generator)),
       _simulation_distance(std::move(other._simulation_distance)),
-      _keep_loaded_distance(std::move(other._keep_loaded_distance)) {};
+      _keep_loaded_distance(std::move(other._keep_loaded_distance)),
+      _biomeRadiusInMeters(std::move(other._biomeRadiusInMeters)),
+      _metersPerTile(std::move(other._metersPerTile))  {};
 
 // ----- Operadores -----
 WorldSystem& WorldSystem::operator=(WorldSystem&& other) noexcept {
@@ -36,6 +46,8 @@ WorldSystem& WorldSystem::operator=(WorldSystem&& other) noexcept {
     _Manager = std::move(other._Manager);
     _simulation_distance = std::move(other._simulation_distance);
     _keep_loaded_distance = std::move(other._keep_loaded_distance);
+    _biomeRadiusInMeters = std::move(other._biomeRadiusInMeters);
+    _metersPerTile = std::move(other._metersPerTile);
   }
   return *this;
 }
@@ -66,7 +78,6 @@ const Tile& WorldSystem::GetTile(int WorldX, int WorldY) const{
 const Chunk* WorldSystem::GetChunk(ChunkCoord coord) const{
   return _Manager.GetChunk(coord);
 }
-
 
 void WorldSystem::SetTile(int WorldX, int WorldY, const Tile& Value){
   ChunkCoord coord = _Manager.WorldToChunkPos(WorldX,WorldY);
@@ -149,14 +160,14 @@ const uint32_t& WorldSystem::GetChunkSize() const{
 DynamicArray<const DynamicArray<DynamicArray<Tile>>*> WorldSystem::loadAllChunksInVector(const DynamicArray<ChunkCoord>& Chunk_Array){
   DynamicArray<const DynamicArray<DynamicArray<Tile>>*> TileList;
 
-  for(int i = 0; i<Chunk_Array.size(); ++i){
+  for(int i = 0; i<static_cast<int>(Chunk_Array.size()); ++i){
     TileList.push_back(LoadChunk_ptr(Chunk_Array[i]));
   }
   return TileList;
 }
 
 void WorldSystem::UnloadAllChunksInVector(const DynamicArray<ChunkCoord>& Chunk_Array){
-  for(int i = 0; i<Chunk_Array.size(); ++i){
+  for(int i = 0; i<static_cast<int>(Chunk_Array.size()); ++i){
     UnloadChunk(Chunk_Array[i]);
   }
 }

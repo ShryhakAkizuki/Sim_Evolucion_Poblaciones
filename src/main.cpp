@@ -101,7 +101,7 @@ int main(){
     // -------------------------- Motor de mapas --------------------------
     std::cout << "Inicializando generador de mundo...\n";   
     LakeConfig Parametros_Lago (0.01f, -0.4f);
-    WorldSystem Map_Engine(Biome_Engine, worldSeed, 128, Parametros_Lago, 8, 12);
+    WorldSystem Map_Engine(Biome_Engine.getTodosBiomasID(), worldSeed, 128, Parametros_Lago, 6, 8, 500,1);
 
     // -------------------------- Motor grafico --------------------------
     // Configuración gráfica

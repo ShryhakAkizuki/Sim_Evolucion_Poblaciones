@@ -17,24 +17,31 @@ private:
     int _simulation_distance = 8;
     int _keep_loaded_distance = 12;
 
+    float _biomeRadiusInMeters = 500;      
+    float _metersPerTile = 1;
+
     Double_Linked_List<ChunkCoord> _Activity_Centers;
     Double_Linked_List<Chunk*> _Distant_Chunks;
     
 public:
     // ----- Constructores -----
 
-    explicit WorldSystem(const BiomeSystem& biomeSystem, 
+    explicit WorldSystem(DynamicArray<int> BiomesID, 
                          uint64_t worldSeed = 12345, 
-                        uint32_t chunkSize = 16, 
+                         uint32_t chunkSize = 16, 
                          int simulation_distance = 8, 
-                         int keep_loaded_distance = 12);
+                         int keep_loaded_distance = 12,
+                         float biomeRadiusInMeters = 500,
+                         float _metersPerTile = 1);
                          
-    explicit WorldSystem(const BiomeSystem& biomeSystem,
+    explicit WorldSystem(DynamicArray<int> BiomesID,
                          uint64_t worldSeed = 12345, 
-                        uint32_t chunkSize = 16, 
+                         uint32_t chunkSize = 16, 
                          LakeConfig lake_config = LakeConfig(),
                          int simulation_distance = 8, 
-                         int keep_loaded_distance = 12);
+                         int keep_loaded_distance = 12,
+                         float biomeRadiusInMeters = 500,
+                         float _metersPerTile = 1);
 
     WorldSystem(const WorldSystem& other) = delete;
     WorldSystem(WorldSystem&& other) noexcept;

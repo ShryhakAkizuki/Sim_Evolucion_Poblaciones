@@ -318,7 +318,7 @@ public:
     }
 
     bool contains(const Key& key) const {
-        return find_otr(key) != nullptr;
+        return find_ptr(key) != nullptr;
     }
 
     void reserve(size_t count) {

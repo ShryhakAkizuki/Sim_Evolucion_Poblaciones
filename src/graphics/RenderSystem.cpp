@@ -155,7 +155,7 @@ void RenderSystem::removeChunk(const ChunkCoord& coord) {
 void RenderSystem::updateChunk(const DynamicArray<ChunkCoord> &Coord_Array, DynamicArray<const DynamicArray<DynamicArray<Tile>>*> Chunk_list) {
     if(Coord_Array.size() != Chunk_list.size()) return;
 
-    for(int i = 0; i < Chunk_list.size(); ++i){
+    for(int i = 0; i < static_cast<int>(Chunk_list.size()); ++i){
         if(Chunk_list[i]!= nullptr){
             updateChunk(Coord_Array[i],*(Chunk_list[i]));
         }
@@ -163,7 +163,7 @@ void RenderSystem::updateChunk(const DynamicArray<ChunkCoord> &Coord_Array, Dyna
 }
 
 void RenderSystem::removeChunk(const DynamicArray<ChunkCoord> &Coord_Array) {
-    for(int i = 0; i < Coord_Array.size(); ++i){
+    for(int i = 0; i < static_cast<int>(Coord_Array.size()); ++i){
         _tileRenderer.removeChunk(Coord_Array[i]);
     }
 }

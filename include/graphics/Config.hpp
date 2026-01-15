@@ -11,7 +11,6 @@ struct GraphicsConfig {
     
     // Renderizado
     int tileSize = 5;
-    int maxChunksPerFrame = 64;
     
     // Cámara
     float cameraMoveSpeed = 1000.0f;
@@ -27,7 +26,7 @@ struct GraphicsConfig {
     bool wireframeMode = false;
     bool showGrid = false;
     
-    // Colores
+    // Colores - xd
     struct Colors {
         float backgroundColor[4] = {0.1f, 0.1f, 0.12f, 1.0f};
         float waterColor[4] = {0.25f, 0.64f, 0.87f, 0.7f};
