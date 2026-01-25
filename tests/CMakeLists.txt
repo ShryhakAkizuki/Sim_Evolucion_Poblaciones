@@ -1,5 +1,5 @@
 # Configuración para tests
-find_package(GTest REQUIRED)
+include(GoogleTest)
 
 # -----------------------------
 # Dinamic Array - Testing
