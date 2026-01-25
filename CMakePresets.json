@@ -1,0 +1,73 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "debug",
+      "generator": "Ninja",
+      "binaryDir": "build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang",
+        "BUILD_TESTS": true,
+        "BUILD_MAIN_APP": true
+      }
+    },
+    {
+      "name": "release",
+      "generator": "Ninja",
+      "binaryDir": "build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang",
+        "BUILD_TESTS": false,
+        "BUILD_MAIN_APP": true
+      }
+    },
+    {
+      "name": "test",
+      "generator": "Ninja",
+      "binaryDir": "build/test",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang",
+        "BUILD_TESTS": true,
+        "BUILD_MAIN_APP": false
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "test",
+      "configurePreset": "test"
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name": "debug-tests",
+      "configurePreset": "debug",
+      "execution": {
+        "jobs": 8
+      }
+    },
+    {
+      "name": "test-only",
+      "configurePreset": "test",
+      "execution": {
+        "jobs": 12
+      }
+    }
+  ]
+}

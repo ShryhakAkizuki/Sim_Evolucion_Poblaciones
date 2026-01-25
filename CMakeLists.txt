@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(Sim_Evolucion_Poblaciones 
         VERSION 0.1 
@@ -8,6 +9,10 @@ project(Sim_Evolucion_Poblaciones
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+
+option(BUILD_TESTS "Build tests" ON)
+option(BUILD_MAIN_APP "Build main application" ON)
 
 # --------------------------------------------------
 # FetchContent
@@ -118,5 +123,14 @@ FetchContent_MakeAvailable(glad)
 # --------------------------------------------------
 # Subproyecto
 # --------------------------------------------------
-add_subdirectory(src)
 
+# Tests (solo si BUILD_TESTS está activado)
+if(BUILD_TESTS AND EXISTS ${PROJECT_SOURCE_DIR}/tests)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+# Código fuente principal (solo si BUILD_MAIN_APP está activado)
+if(BUILD_MAIN_APP AND EXISTS ${PROJECT_SOURCE_DIR}/src)
+    add_subdirectory(src)
+endif()
