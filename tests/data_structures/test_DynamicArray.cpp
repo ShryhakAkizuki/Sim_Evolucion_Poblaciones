@@ -27,17 +27,6 @@ TEST(DynamicArrayTest, ConstructorWithValue) {
     }
 }
 
-TEST(DynamicArrayTest, ConstructorWithForwardValue) {
-    DynamicArray<int> arr(5, int(42));
-    EXPECT_EQ(arr.size(), 5);
-    EXPECT_EQ(arr.capacity(), 5);
-    EXPECT_FALSE(arr.empty());
-    
-    for (size_t i = 0; i < arr.size(); ++i) {
-        EXPECT_EQ(arr[i], 42);
-    }
-}
-
 TEST(DynamicArrayTest, ConstructorWithList) {
     DynamicArray<int> arr = {1, 2, 3, 4, 5};
     EXPECT_EQ(arr.size(), 5);
@@ -347,6 +336,39 @@ TEST(DynamicArrayTest, Iterators) {
     }
     EXPECT_EQ(sum, 15);
 }
+
+TEST(DynamicArrayTest, Iterator_Find) {
+    DynamicArray<int> arr = {1, 3, 5, 7, 9};
+    
+    auto find = arr.find(1);
+    EXPECT_EQ(*find, 1);
+
+    find = arr.find(2);
+    EXPECT_EQ(find, arr.end());
+
+    find = arr.find(3);
+    EXPECT_EQ(*find, 3);
+
+    find = arr.find(4);
+    EXPECT_EQ(find, arr.end());
+
+    find = arr.find(5);
+    EXPECT_EQ(*find, 5);
+
+    find = arr.find(6);
+    EXPECT_EQ(find, arr.end());
+
+    find = arr.find(7);
+    EXPECT_EQ(*find, 7);
+
+    find = arr.find(8);
+    EXPECT_EQ(find, arr.end());
+
+    find = arr.find(9);
+    EXPECT_EQ(*find, 9);
+}
+
+
 
 // ----- Modificacion -----
 TEST(DynamicArrayTest, Clear) {

@@ -1,76 +1,168 @@
 #pragma once
-#include <initializer_list>
-#include <stdexcept>
-#include <functional>                           // Para std::hash
+
+#include <algorithm>        // Para std::copy, std::move, etc. (en implementaciones)
+#include <utility>          // Para std::forward, std::move, etc.
+#include <functional>       // Para std::hash
 
 template<typename T1, typename T2>
 class Pair{
+public:
+    // ----- Aliases -----
+    using first_type  = T1;
+    using second_type = T2;
+
+    using first_reference = T1&;
+    using const_first_reference = const T1&;
+
+    using second_reference = T2&;
+    using const_second_reference = const T2&;
+
+    // ----- Funciones especiales -----
+    Pair();
+    Pair(const Pair& other) = delete;
+    Pair(Pair&& other) noexcept;
+    Pair& operator=(const Pair& other) = delete;
+    Pair& operator=(Pair&& other) noexcept;
+    ~Pair();
+
+    explicit Pair(const_first_reference first, const_second_reference second);
+    explicit Pair(T1&& first, T2&& second);
+    
+    // ----- Acceso de elementos -----
+    first_reference First();
+    const_first_reference First() const;
+    
+    second_reference Second();
+    const_second_reference Second() const;
+
+    // ----- Modificacion -----
+    void Set_First(const_first_reference value);
+    void Set_First(T1&& value);
+    
+    template<typename... Args>
+    void Set_First(Args&&... args);
+
+    void Set_Second(const_second_reference value);
+    void Set_Second(T2&& value);
+    
+    template<typename... Args>
+    void Set_Second(Args&&... args);
+
+    // ----- Comparadores -----
+    bool operator==(const Pair& other) const;
+    bool operator!=(const Pair& other) const;
+
 protected:
     // ----- Atributos -----
-    T1 _first = {};
-    T2 _second = {};
-
-public:
-    // ----- Constructores -----
-    Pair() = default;
-
-    // Constructor normal
-    Pair(const T1& first, const T2& second) 
-        : _first(first), _second(second) {}
-    
-    // Constructor con movimiento del segundo
-    Pair(const T1& first, T2&& second) 
-        : _first(first), _second(std::move(second)) {}
-    
-    // Constructor con movimiento de ambos
-    Pair(T1&& first, T2&& second) 
-        : _first(std::move(first)), _second(std::move(second)) {}
-    
-    // Constructor template para perfect forwarding
-    template<typename U1, typename U2>
-    Pair(U1&& first, U2&& second) 
-        : _first(std::forward<U1>(first)), 
-          _second(std::forward<U2>(second)) {}
-
-    Pair(const Pair& other) = default;    
-    Pair(Pair&& other) noexcept = default;
-
-    Pair(std::initializer_list<typename std::common_type<T1>::type> init) {
-        if(init.size() != 2) {
-            throw std::invalid_argument("La lista debe contener exactamente dos elementos");
-        }
-        
-        auto it = init.begin();
-        _first = *it;
-        _second = *(++it);
-    }
-
-    // ----- Destructor -----
-    ~Pair() = default;
-
-    // ----- Operadores -----
-    Pair& operator=(const Pair&) = default;
-    Pair& operator=(Pair&&) noexcept = default;
-    
-    bool operator==(const Pair& other) const{
-        return _first == other._first && _second == other._second;
-    }
-
-    bool operator!=(const Pair& other) const{
-        return !(*this == other);
-    }
-
-    // ----- Métodos -----
-    // Asignacion y retorno
-
-    T1& first() { return _first; }
-    const T1& first() const { return _first; }
-
-    T2& second() { return _second; }
-    const T2& second() const { return _second; }
+    first_type first_ = first_type();
+    second_type second_ = second_type();
 };
 
-// ESPECIALIZACIÓN DE HASH
+// ----- Funciones especiales -----
+template<typename T1, typename T2>
+Pair<T1,T2>::Pair() : 
+first_(first_type()), second_(second_type()) {}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::Pair(Pair&& other) noexcept :
+first_(std::move(other.first_)),  second_(std::move(other.second_)) {
+    other.first_ = first_type();
+    other.second_ = second_type();
+}
+
+template<typename T1, typename T2>
+Pair<T1,T2>& Pair<T1,T2>::operator=(Pair&& other) noexcept {
+    if(this != &other){
+        first_ = other.first_;
+        second_ = other.second_;
+        
+        other.first_ = first_type();
+        other.second_ = second_type();
+    }
+    return *this;
+}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::~Pair() {
+    first_.~first_type();
+    second_.~second_type();
+}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::Pair(const_first_reference first, const_second_reference second) :
+first_(first), second_(second) {}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::Pair(T1&& first, T2&& second) :
+first_(std::move(first)), second_(std::move(second)) {}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::first_reference Pair<T1,T2>::First() {
+    return first_;
+}
+
+// ----- Acceso de elementos -----
+template<typename T1, typename T2>
+Pair<T1,T2>::const_first_reference Pair<T1,T2>::First() const {
+    return first_;
+}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::second_reference Pair<T1,T2>::Second() {
+    return second_;
+}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::const_second_reference Pair<T1,T2>::Second() const {
+    return second_;
+}
+
+// ----- Modificacion -----
+template<typename T1, typename T2>
+void Pair<T1,T2>::Set_First(const_first_reference value) {
+    first_ = value;
+}
+
+template<typename T1, typename T2>
+void Pair<T1,T2>::Set_First(T1&& value) {
+    first_ = std::move(value);
+}
+
+template<typename T1, typename T2>
+template<typename... Args>
+void  Pair<T1,T2>::Set_First(Args&&... args) {
+    first_ = first_type(std::forward<Args>(args)...);
+}
+
+template<typename T1, typename T2>
+void Pair<T1,T2>::Set_Second(const_second_reference value) {
+    second_ = value;
+}
+
+template<typename T1, typename T2>
+void Pair<T1,T2>::Set_Second(T2&& value) {
+    second_ = std::move(value);
+}
+
+template<typename T1, typename T2>
+template<typename... Args>
+void  Pair<T1,T2>::Set_Second(Args&&... args) {
+    second_ = second_type(std::forward<Args>(args)...);
+}
+
+// ----- Comparadores -----
+template<typename T1, typename T2>
+bool Pair<T1,T2>::operator==(const Pair& other) const {
+    if (this == &other) return true;
+    return first_ == other.first_ && second_ == other.second_;
+}
+
+template<typename T1, typename T2>
+bool Pair<T1,T2>::operator!=(const Pair& other) const {
+    return !(*this == other);
+}
+
+// ################# Especializacion de Hash #################
 namespace std {
     template<typename T1, typename T2>
     struct hash<Pair<T1, T2>> {

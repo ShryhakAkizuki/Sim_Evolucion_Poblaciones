@@ -41,10 +41,6 @@ public:
 
     DynamicArray(size_type capacity, const_reference value);
     explicit DynamicArray(Reserve_TAG, size_type capacity);
-    
-    template<typename... Args>
-    DynamicArray(size_type capacity, Args&&... args);
-
     DynamicArray(std::initializer_list<T> init);
     DynamicArray(std::span<T> s);
 
@@ -86,6 +82,9 @@ public:
 
     iterator erase(const_iterator pos);
     iterator erase(const_iterator first, const_iterator last);
+
+    iterator find(const_reference value);
+    const_iterator find(const_reference value) const;
 
     // ----- Capacidad -----
     bool empty() const noexcept;
@@ -221,33 +220,6 @@ capacity_(capacity), size_(0) {
 }
 
 template<typename T>
-template<typename... Args>
-DynamicArray<T>::DynamicArray(size_type capacity, Args&&... args):
-capacity_(0), size_(0) {
-
-    if (capacity == 0) {
-        data_ = nullptr;
-        return;
-    }
-
-    try {
-        data_ = static_cast<pointer>(::operator new(capacity * sizeof(value_type)));
-
-        for(size_ = 0; size_ < capacity; ++size_) new(&data_[size_]) value_type(std::forward<Args>(args)...);
-        capacity_ = capacity;
-
-    } catch (...) {
-        for(size_type i = 0; i<size_; ++i) data_[i].~value_type();
-        
-        ::operator delete(data_);
-        data_ = nullptr;
-        capacity_ = 0;
-        size_ = 0;
-        throw;
-    }
-}
-
-template<typename T>
 DynamicArray<T>::DynamicArray(std::initializer_list<T> init) :
 capacity_(0), size_(0) {
     
@@ -310,7 +282,6 @@ capacity_(0), size_(0) {
         return;
     }
 
-    // Primera pasada: contar elementos
     size_type count = 0;
     {
         It temp = first;
@@ -682,6 +653,18 @@ DynamicArray<T>::iterator DynamicArray<T>::erase(const_iterator first, const_ite
     if(size_ > (1/4)*capacity_) shrink_to_fit();
 
     return data_ + first_index;
+}
+
+template<typename T>            
+DynamicArray<T>::iterator DynamicArray<T>::find(const_reference value) {
+    for(iterator it = begin(); it != end(); ++it) if (*it == value) return it;
+    return end();
+}
+
+template<typename T>            
+DynamicArray<T>::const_iterator DynamicArray<T>::find(const_reference value) const {
+    for(const_iterator it = cbegin(); it != cend(); ++it) if (*it == value) return it;
+    return cend();
 }
 
 // ----- Capacidad -----

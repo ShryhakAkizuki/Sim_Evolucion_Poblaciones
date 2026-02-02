@@ -93,6 +93,18 @@
     {
       "name": "test",
       "configurePreset": "test"
+    },
+    {
+      "name": "win-debug",
+      "configurePreset": "win-debug"
+    },
+    {
+      "name": "win-release",
+      "configurePreset": "win-release"
+    },
+    {
+      "name": "win-test",
+      "configurePreset": "win-test"
     }
   ],
 
@@ -107,6 +119,19 @@
     {
       "name": "test-only",
       "configurePreset": "test",
+      "execution": {
+        "jobs": 12
+      }
+    },    {
+      "name": "win-debug-tests",
+      "configurePreset": "win-debug",
+      "execution": {
+        "jobs": 8
+      }
+    },
+    {
+      "name": "win-test-only",
+      "configurePreset": "win-test",
       "execution": {
         "jobs": 12
       }

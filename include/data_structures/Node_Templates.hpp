@@ -21,11 +21,8 @@ public:
     NodeBase& operator=(NodeBase&& other) noexcept;
     ~NodeBase();
 
-    NodeBase(const_reference value);
-    NodeBase(T&& value);
-
-    template<typename... Args>
-    NodeBase(Args&&... args);
+    explicit NodeBase(const_reference value);
+    explicit NodeBase(T&& value);
 
     // ----- Acceso de elementos -----
     reference Value();
@@ -58,9 +55,9 @@ public:
     using reference = NodeBase<T>::reference;
     using const_reference = NodeBase<T>::const_reference;
     
-    using owner_pointer = std::unique_ptr<DListNode>;
-    using observer_pointer = DListNode*;
-    using const_observer_pointer = const DListNode*;
+    using owner_pointer = std::unique_ptr<DListNode<T>>;
+    using observer_pointer = DListNode<T>*;
+    using const_observer_pointer = const DListNode<T>*;
 
     // ----- Funciones especiales -----
     DListNode();
@@ -73,9 +70,6 @@ public:
     explicit DListNode(const_reference value, owner_pointer next = nullptr, observer_pointer back = nullptr);
     explicit DListNode(T&& value, owner_pointer next = nullptr, observer_pointer back = nullptr);
 
-    template<typename... Args>
-    DListNode(Args&&... args);
-
     // ----- Acceso de elementos -----
     observer_pointer Next();
     const_observer_pointer Next() const;
@@ -86,6 +80,9 @@ public:
     // ----- Modificacion -----
     void SetNext(owner_pointer next);
     void SetBack(observer_pointer back);
+    
+    owner_pointer release_next();
+
 
 protected:
     // ----- Atributos -----
@@ -127,11 +124,6 @@ data_(value) {}
 template<typename T>    
 NodeBase<T>::NodeBase(T&& value) :
 data_(std::move(value)) {}
-
-template<typename T>    
-template<typename... Args>
-NodeBase<T>::NodeBase(Args&&... args) :
-data_(value_type(std::forward<Args>(args)...)) {}
 
 // ----- Acceso de elementos -----
 template<typename T>    
@@ -184,6 +176,7 @@ template<typename T>
 DListNode<T>::DListNode(DListNode&& other) noexcept :
 NodeBase<T>(std::move(other)),  back_(other.back_), next_(std::move(other.next_)) {
     other.back_ = nullptr;
+    other.next_ = nullptr;
 }
 
 template<typename T>    
@@ -199,6 +192,7 @@ DListNode<T>& DListNode<T>::operator=(DListNode&& other) noexcept {
         next_ = std::move(other.next_);
 
         other.back_ = nullptr;
+        other.next_ = nullptr;
     }
     return *this;
 }
@@ -216,11 +210,6 @@ NodeBase<T>(value), back_(back), next_(std::move(next)) {}
 template<typename T>    
 DListNode<T>::DListNode(T&& value, owner_pointer next, observer_pointer back) :
 NodeBase<T>(std::move(value)), back_(back), next_(std::move(next)) {}
-
-template<typename T>    
-template<typename... Args>
-DListNode<T>::DListNode(Args&&... args) : 
-NodeBase<T>(std::forward<Args>(args)...), back_(nullptr), next_(nullptr) {}
 
 // ----- Acceso de elementos -----
 template<typename T>    
@@ -255,4 +244,9 @@ template<typename T>
 void DListNode<T>::SetBack(observer_pointer back) {
     back_ = nullptr;
     back_ = back;
+}
+
+template<typename T>    
+DListNode<T>::owner_pointer DListNode<T>::release_next(){
+    return std::move(next_);
 }
