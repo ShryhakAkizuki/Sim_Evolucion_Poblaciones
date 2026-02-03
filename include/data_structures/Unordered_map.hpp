@@ -9,7 +9,7 @@ class Unordered_map{
 public:
     // ----- Aliases -----
     using key_type  = Key;
-    using key_reference = key&;
+    using key_reference = Key&;
     using const_key_reference = const Key&;
 
     using mapped_type = T;
@@ -515,6 +515,25 @@ private:
 //     }
     
 };
+
+template<typename Key, typename T>
+class Unordered_map<Key,T>::iterator {
+public:
+    // ----- Aliases -----
+    using iterator_category = std:: ;
+
+
+    using node_iterator = Double_Linked_List<Pair<Key, T>>::iterator;
+    using const_unordered_map_pointer = const Unordered_map<Key,TDouble_Linked>*;
+
+private:
+
+
+};
+
+
+
+
 
 // ----- Funciones especiales -----
 template<typename Key, typename T>

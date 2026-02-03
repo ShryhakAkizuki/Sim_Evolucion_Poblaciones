@@ -727,7 +727,7 @@ template<typename T>
 Double_Linked_List<T>::iterator Double_Linked_List<T>::erase(const_iterator first, const_iterator last) {
     iterator it(first);
     
-    if (first == last) it; 
+    if (first == last) return it; 
 
     while(it!=iterator(last)) it = erase(const_iterator(it));
 
