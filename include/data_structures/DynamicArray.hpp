@@ -753,14 +753,14 @@ void DynamicArray<T>::shrink_to_fit() {
 
 template<typename T>            
 void DynamicArray<T>::push_back(const_reference value){
-    if (size_ >= capacity_) reserve( (capacity_ == 0) ? DEFAULT_CAPACITY:capacity_*GROWTH_FACTOR);
+    if (size_ >= capacity_) reserve( (capacity_ == 0) ? DEFAULT_CAPACITY:static_cast<size_type>(capacity_*GROWTH_FACTOR));
     
     new(&data_[size_++]) value_type(value);
 }
 
 template<typename T>            
 void DynamicArray<T>::push_back(T&& value){
-    if (size_ >= capacity_) reserve( (capacity_ == 0) ? DEFAULT_CAPACITY:capacity_*GROWTH_FACTOR);
+    if (size_ >= capacity_) reserve( (capacity_ == 0) ? DEFAULT_CAPACITY:static_cast<size_type>(capacity_*GROWTH_FACTOR));
     
     new(&data_[size_++]) value_type(std::move(value));
 }
@@ -768,7 +768,7 @@ void DynamicArray<T>::push_back(T&& value){
 template<typename T>           
 template<typename... Args>
 DynamicArray<T>::reference DynamicArray<T>::emplace_back(Args&&... args){
-    if (size_ >= capacity_) reserve( (capacity_ == 0) ? DEFAULT_CAPACITY:capacity_*GROWTH_FACTOR);
+    if (size_ >= capacity_) reserve( (capacity_ == 0) ? DEFAULT_CAPACITY:static_cast<size_type>(capacity_*GROWTH_FACTOR));
     
     new(&data_[size_++]) value_type(std::forward<Args>(args)...);
 

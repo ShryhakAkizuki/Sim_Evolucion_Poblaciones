@@ -23,9 +23,11 @@ public:
     Pair(Pair&& other) noexcept;
     Pair& operator=(const Pair& other) = delete;
     Pair& operator=(Pair&& other) noexcept;
-    ~Pair();
+    ~Pair() = default;
 
     explicit Pair(const_first_reference first, const_second_reference second);
+    explicit Pair(const_first_reference first, T2&& second);
+    explicit Pair(T1&& first, const_second_reference second);
     explicit Pair(T1&& first, T2&& second);
     
     // ----- Acceso de elementos -----
@@ -73,8 +75,8 @@ first_(std::move(other.first_)),  second_(std::move(other.second_)) {
 template<typename T1, typename T2>
 Pair<T1,T2>& Pair<T1,T2>::operator=(Pair&& other) noexcept {
     if(this != &other){
-        first_ = other.first_;
-        second_ = other.second_;
+        first_ = std::move(other.first_);
+        second_ = std::move(other.second_);
         
         other.first_ = first_type();
         other.second_ = second_type();
@@ -83,14 +85,16 @@ Pair<T1,T2>& Pair<T1,T2>::operator=(Pair&& other) noexcept {
 }
 
 template<typename T1, typename T2>
-Pair<T1,T2>::~Pair() {
-    first_.~first_type();
-    second_.~second_type();
-}
-
-template<typename T1, typename T2>
 Pair<T1,T2>::Pair(const_first_reference first, const_second_reference second) :
 first_(first), second_(second) {}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::Pair(const_first_reference first, T2&& second) :
+first_(first), second_(std::move(second)) {}
+
+template<typename T1, typename T2>
+Pair<T1,T2>::Pair(T1&& first, const_second_reference second) : 
+first_(std::move(first)), second_(second) {}
 
 template<typename T1, typename T2>
 Pair<T1,T2>::Pair(T1&& first, T2&& second) :
@@ -167,8 +171,8 @@ namespace std {
     template<typename T1, typename T2>
     struct hash<Pair<T1, T2>> {
         size_t operator()(const Pair<T1, T2>& pair) const {
-            size_t h1 = hash<T1>{}(pair.first());
-            size_t h2 = hash<T2>{}(pair.second());
+            size_t h1 = hash<T1>{}(pair.First());
+            size_t h2 = hash<T2>{}(pair.Second());
             return h1 ^ (h2 << 1) ^ (h2 >> 31);
         }
     };
